@@ -1,5 +1,3 @@
-
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,6 +9,7 @@ const UserRegister = () => {
     last_name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     contact_no: ''
   });
 
@@ -20,14 +19,14 @@ const UserRegister = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    setError(''); // Clear error on new input
+    setError('');
   };
 
-  // Basic validation
+  // Basic form validation
   const isValidForm = () => {
-    const { first_name, last_name, email, password, contact_no } = formData;
+    const { first_name, last_name, email, password, confirmPassword, contact_no } = formData;
 
-    if (!first_name || !last_name || !email || !password || !contact_no) {
+    if (!first_name || !last_name || !email || !password || !confirmPassword || !contact_no) {
       setError('All fields are required.');
       return false;
     }
@@ -47,10 +46,15 @@ const UserRegister = () => {
       return false;
     }
 
+    if (password !== confirmPassword) {
+      setError('Password and confirm password must be same.');
+      return false;
+    }
+
     return true;
   };
 
-  // Handle form submit
+  // Submit handler
   const signUpHandler = (e) => {
     e.preventDefault();
 
@@ -61,7 +65,7 @@ const UserRegister = () => {
     navigate('/login');
   };
 
-  // Navigate to login
+  // Redirect to login
   const signInHandler = () => {
     navigate('/login');
   };
@@ -134,12 +138,28 @@ const UserRegister = () => {
             />
           </div>
 
+          <div className="mb-4">
+            <label className="form-label fw-bold">Confirm Password</label>
+            <input
+              name="confirmPassword"
+              type="password"
+              placeholder="Confirm password"
+              className="form-control rounded-pill"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+            />
+          </div>
+
           <div className="d-grid gap-2">
             <button type="submit" className="btn btn-primary rounded-pill">
               Register
             </button>
-            <button type="button" className="btn btn-outline-secondary rounded-pill" onClick={signInHandler}>
-              Already Registered? Sign In
+            <button
+              type="button"
+              className="btn btn-outline-secondary rounded-pill"
+              onClick={signInHandler}
+            >
+              Already Registered? <span>LogIn Here</span>
             </button>
           </div>
         </form>
@@ -149,4 +169,3 @@ const UserRegister = () => {
 };
 
 export default UserRegister;
-

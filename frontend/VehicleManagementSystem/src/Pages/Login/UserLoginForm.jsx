@@ -112,7 +112,7 @@ const UserLoginForm = () => {
               Login 
             </button>
             <button type="button" className="btn btn-outline-secondary rounded-pill" onClick={handleSignUp}>
-              Don't have an account? Sign Up
+              Don't have an account? <span>Register Here</span>
             </button>
           </div>
         </form>
