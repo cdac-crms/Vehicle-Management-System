@@ -231,7 +231,7 @@ const Header = () => {
 
                 <li className="nav-item">
                   <Link
-                    to="/admin/customers"
+                    to="/admin/view-feedback"
                     className="nav-link d-flex align-items-center text-light"
                     style={{ fontWeight: 500 }}
                   >
