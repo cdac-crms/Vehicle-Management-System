@@ -53,7 +53,7 @@ const MyProfilePage = () => {
       >
         {/* Update Profile Button fixed to top-right inside card */}
         <Link
-          to="/update-profile"
+          to="/customer/update-profile"
           className="btn btn-primary fw-semibold position-absolute"
           style={{
             top: 22,

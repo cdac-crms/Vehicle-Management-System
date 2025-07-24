@@ -24,9 +24,12 @@ const HelpSupport = () => {
 
   return (
     <div className="container py-4" style={{ maxWidth: 540 }}>
-      <h2 className="mb-4 text-primary fw-bold">
-        <i className="bi bi-question-circle me-2"></i> Help & Support
+
+      <h2 className="mb-4 fw-bold text-center text-primary bg-light py-3 rounded">
+        <i className="bi bi-question-circle-fill me-2"></i>
+        Help &amp; Support
       </h2>
+
       <p className="text-muted mb-4">
         Raise your concern or report any issue about your bookings or cars. We’ll get in touch soon!
       </p>

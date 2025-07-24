@@ -1,8 +1,10 @@
 
 import { Link, useNavigate } from 'react-router-dom';
 import { MdDashboard } from "react-icons/md";
-import { BsCarFrontFill,BsPencilSquare,BsBoxArrowInRight,BsJournalCheck,BsPersonBadge,BsBoxArrowRight,BsPersonCircle,BsPersonPlus,
-    BsBuilding,BsGearWideConnected,BsListUl,BsPeopleFill,BsQuestionCircle,} from 'react-icons/bs';
+import {
+  BsCarFrontFill, BsPencilSquare, BsBoxArrowInRight, BsJournalCheck, BsPersonBadge, BsBoxArrowRight, BsPersonCircle, BsPersonPlus,
+  BsBuilding, BsGearWideConnected, BsListUl, BsPeopleFill, BsQuestionCircle,
+} from 'react-icons/bs';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -73,10 +75,10 @@ const Header = () => {
                 <li className="nav-item">
                   <Link
                     to="/customer/customer-dashboard"
-                     className="nav-link d-flex align-items-center text-light"
+                    className="nav-link d-flex align-items-center text-light"
                     style={{ fontWeight: 500 }}
                   >
-                     <MdDashboard />Dashboard
+                    <MdDashboard />Dashboard
                   </Link>
                 </li>
                 <li className="nav-item">
@@ -110,13 +112,19 @@ const Header = () => {
                 <li className="nav-item">
                   <button
                     onClick={logoutHandler}
-                    className="btn btn-outline-light d-flex align-items-center fw-semibold ms-2"
+                    className="btn d-flex align-items-center fw-semibold ms-2"
                     type="button"
-                    style={{ letterSpacing: '-0.02em' }}
+                    style={{
+                      letterSpacing: '-0.02em',
+                      backgroundColor: '#b30527',  // red background
+                      color: '#fff',               // white text
+                      border: 'none',
+                    }}
                   >
                     <BsBoxArrowRight style={iconStyle} /> Logout
                   </button>
                 </li>
+
                 {/* Username at right end */}
                 {username && (
                   <li
@@ -125,7 +133,7 @@ const Header = () => {
                   >
                     <span>
                       <BsPersonCircle style={iconStyle} />
-                         Hello, {username.charAt(0).toUpperCase() + username.slice(1)}
+                      Hello, {username.charAt(0).toUpperCase() + username.slice(1)}
                     </span>
                   </li>
                 )}

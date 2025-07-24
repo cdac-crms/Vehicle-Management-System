@@ -15,6 +15,9 @@ import CarDetailsPage from './Pages/Customer/CarDetailsPage';
 import BookingDetailsPage from './Pages/Customer/BookingDetailsPage';
 import MyBookingsPage from './Pages/Customer/MyBookingsPage';
 import UpdateProfilePage from './Pages/Customer/UpdateProfilePage';
+import MyProfilePage from './Pages/Customer/MyProfilePage';
+import PaymentPage from './Pages/Customer/PaymentPage';
+import HelpSupport from "./Pages/Customer/HelpSupport";
 
 
 
@@ -39,7 +42,10 @@ function App() {
         <Route path="/customer/car-details/:id" element={<CarDetailsPage />} />
         <Route path="/customer/booking-details/:id" element={<BookingDetailsPage />} />
         <Route path="/customer/my-bookings" element={<MyBookingsPage />} />
-        <Route path="/customer/my-profile" element={<UpdateProfilePage />} />
+        <Route path="/customer/update-profile" element={<UpdateProfilePage />} />
+        <Route path="/customer/my-profile" element={<MyProfilePage />} />
+        <Route path="/customer/payment/:id" element={<PaymentPage />} />
+         <Route path="/customer/help-support" element={<HelpSupport />} />
 
         
 
