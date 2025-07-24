@@ -6,6 +6,7 @@ import HomePage from "./Pages/Home/HomePage";
 import Header from "./Components/Navbar/Header";
 import UserLoginForm from "./Pages/Login/UserLoginForm";
 import UserRegister from "./Pages/Register/UserRegister";
+
 import AdminRegisterForm from "./Pages/Admin/AdminRegisterForm";
 import AddCompanyForm from "./Pages/Admin/AddCompanyForm";
 import AddVariantForm from "./Pages/Admin/AddVariantForm";
@@ -28,12 +29,14 @@ import UpdateVehicleForm from "./Pages/Admin/VehicleComponent/UpdateVehicleForm"
 function App() {
   return (
     <div>
+       
       <Header></Header>
-
+      
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<UserLoginForm />} />
         <Route path="/register" element={<UserRegister />} />
+
         <Route path="/admin/register" element={<AdminRegisterForm />} />
         <Route path="/admin/add-company" element={<AddCompanyForm />} />
         <Route path="/admin/add-variant" element={<AddVariantForm />} />
@@ -42,10 +45,8 @@ function App() {
         <Route path="/admin/view-customers" element={<ViewAllCustomers />} />
         <Route path="/admin/bookings" element={<ViewCustomerBooking/>} />
         <Route path="/admin/update-vehicle/:id" element={<UpdateVehicleForm />} />
-        <Route path="/admin/view-vehicle/:id" element={<VehicleDetails/>}/>
+        <Route path="/admin/view-vehicle/:id" element = {<VehicleDetails />} />
 
-        
-{/* ------------------------------------------------------------------------------------------ */}
         <Route path="/customer/customer-dashboard" element={<CustomerDashboard />} />
         <Route path="/customer/car-details/:id" element={<CarDetailsPage />} />
         <Route path="/customer/booking-details/:id" element={<BookingDetailsPage />} />
@@ -55,7 +56,10 @@ function App() {
         <Route path="/customer/payment/:id" element={<PaymentPage />} />
          <Route path="/customer/help-support" element={<HelpSupport />} />
         
+
+
       </Routes>
+      
     </div>
   );
 }
