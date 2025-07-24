@@ -16,6 +16,7 @@ import BookingDetailsPage from './Pages/Customer/BookingDetailsPage';
 import MyBookingsPage from './Pages/Customer/MyBookingsPage';
 import UpdateProfilePage from './Pages/Customer/UpdateProfilePage';
 import ViewAllCustomers from "./Pages/Admin/CustomerComponent/ViewAllCustomers";
+import ViewCustomerBooking from "./Pages/Admin/BookingComponent/ViewCustomerBooking";
 
 
 
@@ -36,6 +37,7 @@ function App() {
         <Route path="/admin/add-vehicle" element={<AddVehicleForm />} />
         <Route path="/admin/vehicles" element={<ViewAllVehicles />} />
         <Route path="/admin/view-customers" element={<ViewAllCustomers />} />
+        <Route path="/admin/bookings" element={<ViewCustomerBooking/>} />
 
         <Route path="/customer/customer-dashboard" element={<CustomerDashboard />} />
         <Route path="/customer/car-details/:id" element={<CarDetailsPage />} />
