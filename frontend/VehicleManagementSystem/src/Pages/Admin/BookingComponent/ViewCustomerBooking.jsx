@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 const ViewCustomerBooking = () => {
   const [bookings, setBookings] = useState([]);
@@ -35,7 +36,11 @@ const ViewCustomerBooking = () => {
       }
     ]);
   }, []);
+  const navigate = useNavigate();
 
+  const handleViewDetails = (booking) => {
+    navigate(`/admin/view-booking/${booking.id}`, { state: booking }); 
+  };
   return (
     <div className="container mt-5">
       <h2 className="text-center mb-4"> All Customer Booking Details</h2>
@@ -79,7 +84,7 @@ const ViewCustomerBooking = () => {
                   <td>₹{booking.totalAmount}</td>
                   
                   <td>
-                    <button  className="btn btn-sm btn-primary me-2"> View </button>
+                    <button  className="btn btn-sm btn-primary me-2"  onClick={() => handleViewDetails(booking)}title="View Bookin details"> View </button>
                   </td>
                 </tr>
               ))}
