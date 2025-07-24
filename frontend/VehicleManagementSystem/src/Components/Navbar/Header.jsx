@@ -72,8 +72,8 @@ const Header = () => {
               <>
                 <li className="nav-item">
                   <Link
-                    to="customer-dashboard"
-                    className="nav-link d-flex align-items-center text-light"
+                    to="/customer/customer-dashboard"
+                     className="nav-link d-flex align-items-center text-light"
                     style={{ fontWeight: 500 }}
                   >
                      <MdDashboard />Dashboard
@@ -85,7 +85,7 @@ const Header = () => {
                     className="nav-link d-flex align-items-center text-light"
                     style={{ fontWeight: 500 }}
                   >
-                    <BsJournalCheck style={iconStyle} /> My Bookings
+                    <BsJournalCheck style={iconStyle} /> MyBookings
                   </Link>
                 </li>
                 <li className="nav-item">
@@ -125,7 +125,7 @@ const Header = () => {
                   >
                     <span>
                       <BsPersonCircle style={iconStyle} />
-                      Hello, {username.charAt(0).toUpperCase() + username.slice(1)}
+                         Hello, {username.charAt(0).toUpperCase() + username.slice(1)}
                     </span>
                   </li>
                 )}

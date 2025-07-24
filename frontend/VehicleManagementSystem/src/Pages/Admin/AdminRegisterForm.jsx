@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const UserRegister = () => {
+const AdminRegisterForm = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -61,19 +61,18 @@ const UserRegister = () => {
     if (!isValidForm()) return;
 
     localStorage.setItem('user', JSON.stringify(formData));
-    alert('User registered successfully!');
-    navigate('/login');
+    alert('Admin registered successfully!');
+          console.log(formData)
+
+   
   };
 
-  // Redirect to login
-  const signInHandler = () => {
-    navigate('/login');
-  };
+ 
 
   return (
     <div className="container d-flex justify-content-center align-items-center vh-100">
       <div className="card shadow-lg p-5 rounded-4" style={{ width: '100%', maxWidth: '500px' }}>
-        <h2 className="text-center mb-4 text-primary">Create Account</h2>
+        <h2 className="text-center mb-4 text-primary">Register Admin</h2>
 
         {error && <div className="alert alert-danger">{error}</div>}
 
@@ -154,13 +153,7 @@ const UserRegister = () => {
             <button type="submit" className="btn btn-primary rounded-pill">
               Register
             </button>
-            <button
-              type="button"
-              className="btn btn-outline-secondary rounded-pill"
-              onClick={signInHandler}
-            >
-              Already Registered? <span>LogIn Here</span>
-            </button>
+            
           </div>
         </form>
       </div>
@@ -168,4 +161,4 @@ const UserRegister = () => {
   );
 };
 
-export default UserRegister;
+export default AdminRegisterForm;
