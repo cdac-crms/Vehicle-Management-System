@@ -72,8 +72,8 @@ const Header = () => {
               <>
                 <li className="nav-item">
                   <Link
-                    to="/customer/dashboard"
-                    className="nav-link d-flex align-items-center text-light"
+                    to="customer-dashboard"
+                     className="nav-link d-flex align-items-center text-light"
                     style={{ fontWeight: 500 }}
                   >
                      <MdDashboard />Dashboard
