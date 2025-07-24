@@ -15,6 +15,7 @@ import CarDetailsPage from './Pages/Customer/CarDetailsPage';
 import BookingDetailsPage from './Pages/Customer/BookingDetailsPage';
 import MyBookingsPage from './Pages/Customer/MyBookingsPage';
 import UpdateProfilePage from './Pages/Customer/UpdateProfilePage';
+import ViewAllCustomers from "./Pages/Admin/CustomerComponent/ViewAllCustomers";
 
 
 
@@ -34,6 +35,7 @@ function App() {
         <Route path="/admin/add-variant" element={<AddVariantForm />} />
         <Route path="/admin/add-vehicle" element={<AddVehicleForm />} />
         <Route path="/admin/vehicles" element={<ViewAllVehicles />} />
+        <Route path="/admin/view-customers" element={<ViewAllCustomers />} />
 
         <Route path="/customer/customer-dashboard" element={<CustomerDashboard />} />
         <Route path="/customer/car-details/:id" element={<CarDetailsPage />} />
@@ -42,6 +44,7 @@ function App() {
         <Route path="/customer/my-profile" element={<UpdateProfilePage />} />
 
         
+
 
       </Routes>
       
