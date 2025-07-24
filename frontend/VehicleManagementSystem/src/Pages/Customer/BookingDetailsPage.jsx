@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { AiFillStar } from "react-icons/ai";
 
 // Demo booking data array
@@ -29,15 +30,15 @@ const demoBookings = [
 const DEFAULT_CAR_IMG = "https://via.placeholder.com/260x120?text=Car+Photo";
 
 const badgeStyles = {
-  pending: { color: '#a67300', backgroundColor: '#fffbea', padding:'0.18em 0.72em', borderRadius: 5, fontWeight: 600 },
-  cancelled: { color: '#b71c1c', backgroundColor: '#ffdde0', padding:'0.18em 0.85em', borderRadius: 4, fontWeight: 600 },
-  approved: { color: '#15418c', backgroundColor: '#e1edfc', padding:'0.18em 0.8em', borderRadius: 5, fontWeight: 600 },
-  confirm: { color: '#2e7d32', backgroundColor: '#e8f5e9', padding:'0.18em 0.8em', borderRadius: 5, fontWeight: 600 },
-  default: { color: '#2e7d32', backgroundColor: '#e8f5e9', padding:'0.18em 0.85em', borderRadius: 4, fontWeight: 600 }
+  pending: { color: '#a67300', backgroundColor: '#fffbea', padding: '0.18em 0.72em', borderRadius: 5, fontWeight: 600 },
+  cancelled: { color: '#b71c1c', backgroundColor: '#ffdde0', padding: '0.18em 0.85em', borderRadius: 4, fontWeight: 600 },
+  approved: { color: '#15418c', backgroundColor: '#e1edfc', padding: '0.18em 0.8em', borderRadius: 5, fontWeight: 600 },
+  confirm: { color: '#2e7d32', backgroundColor: '#e8f5e9', padding: '0.18em 0.8em', borderRadius: 5, fontWeight: 600 },
+  default: { color: '#2e7d32', backgroundColor: '#e8f5e9', padding: '0.18em 0.85em', borderRadius: 4, fontWeight: 600 }
 };
 const paymentBadgeStyles = {
-  success: { color: '#0a7c36', backgroundColor: '#e3faeb', padding:'0.18em 0.85em', borderRadius: 4, fontWeight: 600 },
-  failed: { color: '#b71c1c', backgroundColor: '#ffdde0', padding:'0.18em 0.85em', borderRadius: 4, fontWeight: 600 }
+  success: { color: '#0a7c36', backgroundColor: '#e3faeb', padding: '0.18em 0.85em', borderRadius: 4, fontWeight: 600 },
+  failed: { color: '#b71c1c', backgroundColor: '#ffdde0', padding: '0.18em 0.85em', borderRadius: 4, fontWeight: 600 }
 };
 
 function formatDate(dateStr) {
@@ -67,11 +68,11 @@ export default function BookingDetailsPage() {
   // Badge logic
   let statusStyle;
   switch ((booking?.status || "").toLowerCase()) {
-    case "pending":   statusStyle = badgeStyles.pending; break;
+    case "pending": statusStyle = badgeStyles.pending; break;
     case "cancelled": statusStyle = badgeStyles.cancelled; break;
-    case "approved":  statusStyle = badgeStyles.approved; break;
-    case "confirm":   statusStyle = badgeStyles.confirm; break;
-    default:          statusStyle = badgeStyles.default;
+    case "approved": statusStyle = badgeStyles.approved; break;
+    case "confirm": statusStyle = badgeStyles.confirm; break;
+    default: statusStyle = badgeStyles.default;
   }
   let paymentStyle, paymentLabel;
   if ((booking?.paymentStatus || "").toLowerCase() === "success") {
@@ -85,7 +86,7 @@ export default function BookingDetailsPage() {
   if (!booking) {
     return (
       <div style={{ background: '#f5f7fa', minHeight: '100vh' }}>
-        <div className="container" style={{  maxWidth: 570, margin: '4rem auto', textAlign: 'center' }}>
+        <div className="container" style={{ maxWidth: 570, margin: '4rem auto', textAlign: 'center' }}>
           <div style={{ fontSize: 48, color: "#b30527" }}>⛔️</div>
           <h1 style={{ color: "#102649", fontWeight: 700 }}>Booking not found</h1>
           <button
@@ -107,13 +108,14 @@ export default function BookingDetailsPage() {
       toast.error("Please select a star rating!");
       return;
     }
+    toast.success("Thank you for your review!");
     setDescription("");
     setStars(0);
-    toast.success("Thank you for your review!");
   };
 
   return (
     <div style={{ background: '#f5f7fa', minHeight: '100vh' }}>
+      <ToastContainer />
       <div className="container pt-5" style={{ maxWidth: 850, margin: '0 auto' }}>
         <div
           className="rounded-4 shadow bg-white p-4 mb-4"
@@ -164,7 +166,7 @@ export default function BookingDetailsPage() {
               </div>
             </div>
           </div>
-          {/* Payment details below booking row */}
+          {/* Payment details */}
           <h5 className="mt-4 mb-2 fw-bold" style={{ color: "#15418c" }}>
             Payment Details
           </h5>
@@ -246,3 +248,4 @@ export default function BookingDetailsPage() {
     </div>
   );
 }
+
