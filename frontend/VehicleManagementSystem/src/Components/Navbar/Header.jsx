@@ -72,6 +72,12 @@ const Header = () => {
                 <Link className="nav-link" to="/admin/add-variant">Add Variant</Link>
               </li>
               <li className="nav-item">
+                <Link className="nav-link" to="/admin/add-vehicle">Add Vehicle</Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/admin/vehicles">Vehicles</Link>
+              </li>
+              <li className="nav-item">
                 <Link className="nav-link" to="/admin/viewAllvariants">Variants</Link>
               </li>
               <li className="nav-item">
