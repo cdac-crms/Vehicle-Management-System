@@ -29,7 +29,7 @@ function App() {
         <Route path="/admin/add-variant" element={<AddVariantForm />} />
         <Route path="/admin/add-vehicle" element={<AddVehicleForm />} />
         <Route path="/admin/vehicles" element={<ViewAllVehicles />} />
-         <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+        <Route path="/customer/dashboard" element={<CustomerDashboard />} />
 
         
 
