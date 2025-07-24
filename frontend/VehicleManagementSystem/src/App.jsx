@@ -20,6 +20,7 @@ import PaymentPage from './Pages/Customer/PaymentPage';
 import HelpSupport from "./Pages/Customer/HelpSupport";
 import ViewAllCustomers from "./Pages/Admin/CustomerComponent/ViewAllCustomers";
 import ViewCustomerBooking from "./Pages/Admin/BookingComponent/ViewCustomerBooking";
+import UpdateVehicleForm from "./Pages/Admin/VehicleComponent/UpdateVehicleForm";
 
 
 
@@ -41,6 +42,8 @@ function App() {
         <Route path="/admin/vehicles" element={<ViewAllVehicles />} />
         <Route path="/admin/view-customers" element={<ViewAllCustomers />} />
         <Route path="/admin/bookings" element={<ViewCustomerBooking/>} />
+        <Route path="/admin/update-vehicle/:id" element={<UpdateVehicleForm />} />
+
 
         <Route path="/customer/customer-dashboard" element={<CustomerDashboard />} />
         <Route path="/customer/car-details/:id" element={<CarDetailsPage />} />
