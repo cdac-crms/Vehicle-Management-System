@@ -220,13 +220,14 @@ const Header = () => {
 
                 <li className="nav-item">
                   <Link
-                    to="/admin/customers"
+                    to="/admin/view-payments"
                     className="nav-link d-flex align-items-center text-light"
                     style={{ fontWeight: 500 }}
                   >
                     <FaRupeeSign style={iconStyle} /> Payments
                   </Link>
                 </li>
+                
 
                 <li className="nav-item">
                   <Link
