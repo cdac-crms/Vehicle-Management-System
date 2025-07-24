@@ -18,6 +18,7 @@ import UpdateProfilePage from './Pages/Customer/UpdateProfilePage';
 import MyProfilePage from './Pages/Customer/MyProfilePage';
 import PaymentPage from './Pages/Customer/PaymentPage';
 import HelpSupport from "./Pages/Customer/HelpSupport";
+import ViewAllCustomers from "./Pages/Admin/CustomerComponent/ViewAllCustomers";
 
 
 
@@ -37,6 +38,7 @@ function App() {
         <Route path="/admin/add-variant" element={<AddVariantForm />} />
         <Route path="/admin/add-vehicle" element={<AddVehicleForm />} />
         <Route path="/admin/vehicles" element={<ViewAllVehicles />} />
+        <Route path="/admin/view-customers" element={<ViewAllCustomers />} />
 
         <Route path="/customer/customer-dashboard" element={<CustomerDashboard />} />
         <Route path="/customer/car-details/:id" element={<CarDetailsPage />} />
@@ -48,6 +50,7 @@ function App() {
          <Route path="/customer/help-support" element={<HelpSupport />} />
 
         
+
 
       </Routes>
       

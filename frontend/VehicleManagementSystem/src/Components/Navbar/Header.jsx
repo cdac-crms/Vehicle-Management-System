@@ -6,6 +6,10 @@ import {
   BsBuilding, BsGearWideConnected, BsListUl, BsPeopleFill, BsQuestionCircle,
 } from 'react-icons/bs';
 
+import { FaRupeeSign } from "react-icons/fa";
+import { VscFeedback } from "react-icons/vsc";
+
+
 const Header = () => {
   const navigate = useNavigate();
 
@@ -141,7 +145,7 @@ const Header = () => {
             )}
 
             {/* Admin links */}
-            {token && role === 'admin' && (
+          {token && role === 'admin' && (
               <>
                 <li className="nav-item">
                   <Link
@@ -170,35 +174,73 @@ const Header = () => {
                     <BsGearWideConnected style={iconStyle} /> Add Variant
                   </Link>
                 </li>
-                <li className="nav-item">
+
+                 <li className="nav-item">
                   <Link
-                    to="/admin/viewAllvariants"
+                    to="/admin/add-vehicle"
                     className="nav-link d-flex align-items-center text-light"
                     style={{ fontWeight: 500 }}
                   >
-                    <BsListUl style={iconStyle} /> Variants
+                    <BsCarFrontFill style={iconStyle} /> Add Vehicle
                   </Link>
                 </li>
+
+
                 <li className="nav-item">
                   <Link
-                    to="/admin/ViewAllCustomerBooking"
+                    to="/admin/vehicles"
+                    className="nav-link d-flex align-items-center text-light"
+                    style={{ fontWeight: 500 }}
+                  >
+                    <BsListUl style={iconStyle} /> Vehicles
+                  </Link>
+                </li>
+
+
+                <li className="nav-item">
+                  <Link
+                    to="/admin/bookings"
                     className="nav-link d-flex align-items-center text-light"
                     style={{ fontWeight: 500 }}
                   >
                     <BsJournalCheck style={iconStyle} /> Bookings
                   </Link>
                 </li>
+
+
                 <li className="nav-item">
                   <Link
-                    to="/admin/viewAllcustomers"
+                    to="/admin/view-customers"
                     className="nav-link d-flex align-items-center text-light"
                     style={{ fontWeight: 500 }}
                   >
                     <BsPeopleFill style={iconStyle} /> Customers
                   </Link>
                 </li>
-                {/* Help & Support */}
+
                 <li className="nav-item">
+                  <Link
+                    to="/admin/customers"
+                    className="nav-link d-flex align-items-center text-light"
+                    style={{ fontWeight: 500 }}
+                  >
+                    <FaRupeeSign style={iconStyle} /> Payments
+                  </Link>
+                </li>
+
+                <li className="nav-item">
+                  <Link
+                    to="/admin/customers"
+                    className="nav-link d-flex align-items-center text-light"
+                    style={{ fontWeight: 500 }}
+                  >
+                    <VscFeedback  style={iconStyle} /> Feedback
+                  </Link>
+                </li>
+
+
+                {/* Help & Support */}
+                {/* <li className="nav-item">
                   <Link
                     to="/help-support"
                     className="nav-link d-flex align-items-center text-light"
@@ -206,7 +248,9 @@ const Header = () => {
                   >
                     <BsQuestionCircle style={iconStyle} /> Help & Support
                   </Link>
-                </li>
+                </li> */}
+
+
                 <li className="nav-item">
                   <button
                     onClick={logoutHandler}
