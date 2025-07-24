@@ -9,6 +9,7 @@ import AddCompanyForm from "./Pages/Admin/AddCompanyForm";
 import AddVariantForm from "./Pages/Admin/AddVariantForm";
 import AddVehicleForm from "./Pages/Admin/VehicleComponent/AddVehicleForm";
 import ViewAllVehicles from "./Pages/Admin/VehicleComponent/ViewAllVehicles";
+import CustomerDashboard from './Pages/Customer/CustomerDashboard';
 function App() {
   return (
     <div>
@@ -23,7 +24,7 @@ function App() {
         <Route path="/admin/add-variant" element={<AddVariantForm />} />
         <Route path="/admin/add-vehicle" element={<AddVehicleForm />} />
         <Route path="/admin/vehicles" element={<ViewAllVehicles />} />
-        
+         <Route path="/customer/dashboard" element={<CustomerDashboard />} />
       </Routes>
     </div>
   );
