@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Link, useNavigate } from 'react-router-dom';
 import { MdDashboard } from "react-icons/md";
 import { BsCarFrontFill,BsPencilSquare,BsBoxArrowInRight,BsJournalCheck,BsPersonBadge,BsBoxArrowRight,BsPersonCircle,BsPersonPlus,
@@ -28,7 +28,7 @@ const Header = () => {
     <nav className="navbar navbar-expand-lg navbar-dark shadow-sm" style={navbarStyle}>
       <div className="container-fluid">
         <Link
-          to="/home"
+          to="/"
           className="navbar-brand fw-bold d-flex align-items-center text-light"
           style={{ letterSpacing: '0.04em' }}
         >
