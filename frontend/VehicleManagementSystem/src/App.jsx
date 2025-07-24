@@ -11,14 +11,16 @@ import AddVariantForm from "./Pages/Admin/AddVariantForm";
 import AddVehicleForm from "./Pages/Admin/VehicleComponent/AddVehicleForm";
 import ViewAllVehicles from "./Pages/Admin/VehicleComponent/ViewAllVehicles";
 import CustomerDashboard from './Pages/Customer/CustomerDashboard';
+import CarDetailsPage from './Pages/Customer/CarDetailsPage';
 
 
 
 function App() {
   return (
     <div>
+       
       <Header></Header>
-
+      
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<UserLoginForm />} />
@@ -29,11 +31,13 @@ function App() {
         <Route path="/admin/add-variant" element={<AddVariantForm />} />
         <Route path="/admin/add-vehicle" element={<AddVehicleForm />} />
         <Route path="/admin/vehicles" element={<ViewAllVehicles />} />
-        <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+        <Route path="/customer/customer-dashboard" element={<CustomerDashboard />} />
+        <Route path="/customer/car-details/:id" element={<CarDetailsPage />} />
 
         
 
       </Routes>
+      
     </div>
   );
 }
