@@ -88,16 +88,14 @@ const initialBookings = [
 export default function MyBookingsPage() {
   const navigate = useNavigate();
 
-  // Stateful booking data so we can update cancel status in UI
-  const [bookings, setBookings] = React.useState(initialBookings);
+  // Stateful booking data so we can update cancel status in UI (can be replaced by backend response later)
+  const [bookings, setBookings] = useState(initialBookings);
 
   // When canceled, status should update on the table
   const handleCancel = (booking) => {
     setBookings((prev) =>
       prev.map(b =>
-        b.id === booking.id
-          ? { ...b, status: "Cancelled" }
-          : b
+        b.id === booking.id ? { ...b, status: "Cancelled" } : b
       )
     );
     toast.error(`Booking #${booking.id} cancelled!`);
@@ -114,6 +112,8 @@ export default function MyBookingsPage() {
 
   const handleView = (booking) => {
     toast.info(`Opening details for booking #${booking.id}`);
+    // You can configure the route as needed for your BookingDetailsPage
+    // This route pattern follows your latest flow.
     navigate(`/customer/booking-details/${booking.id}`);
   };
 
@@ -165,16 +165,11 @@ export default function MyBookingsPage() {
                   // Status style
                   let statusStyle;
                   switch (b.status?.toLowerCase()) {
-                    case "pending":
-                      statusStyle = badgeStyles.pending; break;
-                    case "cancelled":
-                      statusStyle = badgeStyles.cancelled; break;
-                    case "approved":
-                      statusStyle = badgeStyles.approved; break;
-                    case "confirm":
-                      statusStyle = badgeStyles.confirm; break;
-                    default:
-                      statusStyle = badgeStyles.default;
+                    case "pending":   statusStyle = badgeStyles.pending; break;
+                    case "cancelled": statusStyle = badgeStyles.cancelled; break;
+                    case "approved":  statusStyle = badgeStyles.approved; break;
+                    case "confirm":   statusStyle = badgeStyles.confirm; break;
+                    default:          statusStyle = badgeStyles.default;
                   }
 
                   // Payment style
@@ -190,7 +185,7 @@ export default function MyBookingsPage() {
                     paymentLabel = "-";
                   }
 
-                  // --- ACTION BUTTON LOGIC ---
+                  // Actions: always show View; others by status
                   const actionButtons = [];
                   const statusLower = b.status?.toLowerCase();
                   if (statusLower === "pending") {
@@ -211,7 +206,6 @@ export default function MyBookingsPage() {
                       >View</button>
                     );
                   } else if (statusLower === "approved") {
-                    // Only show "Pay" and "View", do NOT show Cancel
                     actionButtons.push(
                       <button
                         key="pay"
@@ -220,25 +214,7 @@ export default function MyBookingsPage() {
                         onClick={() => handlePay(b)}
                       >Pay</button>
                     );
-                    actionButtons.push(
-                      <button
-                        key="view"
-                        className="btn"
-                        style={{ ...actionBtnStyle.base, ...actionBtnStyle.view }}
-                        onClick={() => handleView(b)}
-                      >View</button>
-                    );
-                    // DO NOT render Cancel button for approved
-                  } else if (statusLower === "confirm") {
-                    actionButtons.push(
-                      <button
-                        key="view"
-                        className="btn"
-                        style={{ ...actionBtnStyle.base, ...actionBtnStyle.view }}
-                        onClick={() => handleView(b)}
-                      >View</button>
-                    );
-                  } else if (statusLower === "cancelled") {
+                    // View is always enabled
                     actionButtons.push(
                       <button
                         key="view"
@@ -248,8 +224,14 @@ export default function MyBookingsPage() {
                       >View</button>
                     );
                   } else {
+                    // For all other statuses (confirm, cancelled, payment failed, etc.) View is always enabled
                     actionButtons.push(
-                      <span style={{ color: "#888" }}>—</span>
+                      <button
+                        key="view"
+                        className="btn"
+                        style={{ ...actionBtnStyle.base, ...actionBtnStyle.view }}
+                        onClick={() => handleView(b)}
+                      >View</button>
                     );
                   }
 
