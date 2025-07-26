@@ -1,3 +1,5 @@
+
+
 import { Route, Routes } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import HomePage from "./Pages/Home/HomePage";
@@ -19,6 +21,13 @@ import MyProfilePage from './Pages/Customer/MyProfilePage';
 import PaymentPage from './Pages/Customer/PaymentPage';
 import HelpSupport from "./Pages/Customer/HelpSupport";
 import ViewAllCustomers from "./Pages/Admin/CustomerComponent/ViewAllCustomers";
+import ViewCustomerBooking from "./Pages/Admin/BookingComponent/ViewCustomerBooking";
+import UpdateVehicleForm from "./Pages/Admin/VehicleComponent/UpdateVehicleForm";
+import VehicleDetails from "./Pages/Admin/VehicleComponent/VehicleDetails";
+import ViewBookingDetails from "./Pages/Admin/BookingComponent/ViewBookingDetails";
+import ViewCustomerProfile from "./Pages/Admin/CustomerComponent/ViewCustomerProfile";
+import PaymentSummary from "./Pages/Admin/BookingComponent/PaymentSummary";
+import ViewFeedback from "./Pages/Admin/BookingComponent/ViewFeedback";
 
 
 
@@ -39,6 +48,15 @@ function App() {
         <Route path="/admin/add-vehicle" element={<AddVehicleForm />} />
         <Route path="/admin/vehicles" element={<ViewAllVehicles />} />
         <Route path="/admin/view-customers" element={<ViewAllCustomers />} />
+        <Route path="/admin/bookings" element={<ViewCustomerBooking/>} />
+        <Route path="/admin/view-booking/:id" element={<ViewBookingDetails />} />
+        <Route path="/admin/update-vehicle/:id" element={<UpdateVehicleForm />} />
+        <Route path="/admin/view-vehicle/:id" element={<VehicleDetails />} />
+        <Route path="/admin/customer/:id" element={<ViewCustomerProfile />} />
+        <Route path="/admin/view-payments" element={<PaymentSummary />} />
+        <Route path="/admin/view-feedback" element={<ViewFeedback />} />
+      
+
 
         <Route path="/customer/customer-dashboard" element={<CustomerDashboard />} />
         <Route path="/customer/car-details/:id" element={<CarDetailsPage />} />
@@ -48,7 +66,6 @@ function App() {
         <Route path="/customer/my-profile" element={<MyProfilePage />} />
         <Route path="/customer/payment/:id" element={<PaymentPage />} />
          <Route path="/customer/help-support" element={<HelpSupport />} />
-
         
 
 

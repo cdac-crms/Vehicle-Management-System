@@ -116,134 +116,158 @@ export default function BookingDetailsPage() {
   return (
     <div style={{ background: '#f5f7fa', minHeight: '100vh' }}>
       <ToastContainer />
-      <div className="container pt-5" style={{ maxWidth: 850, margin: '0 auto' }}>
-        <div
-          className="rounded-4 shadow bg-white p-4 mb-4"
-          style={{ boxShadow: '0 6px 22px 0 rgba(24,44,123,0.075)' }}
-        >
-          <div className="row g-4 align-items-center">
-            <div className="col-md-4 col-12 text-center">
-              <img
-                src={booking.carImage || DEFAULT_CAR_IMG}
-                alt={booking.carName}
-                style={{
-                  width: 260,
-                  height: 120,
-                  objectFit: "cover",
-                  borderRadius: 14,
-                  boxShadow: "0 2px 10px rgba(24,44,123,0.11)",
-                  marginBottom: 10
-                }}
-              />
-            </div>
-            <div className="col-md-8 col-12">
-              <h2 className="mb-3" style={{ color: "#102649", fontWeight: 700, letterSpacing: '1px' }}>
-                Booking Details
-              </h2>
-              <div className="row mb-1">
-                <div className="col-6"><b>Booking ID</b></div>
-                <div className="col-6">{booking.bookingId || booking.id || "-"}</div>
-                <div className="col-6"><b>Car Name</b></div>
-                <div className="col-6">{booking.carName}</div>
-                <div className="col-6"><b>Variant</b></div>
-                <div className="col-6">{booking.variant}</div>
-                <div className="col-6"><b>Total Days</b></div>
-                <div className="col-6">{totalDays}</div>
-                <div className="col-6"><b>Price/Day</b></div>
-                <div className="col-6">₹{booking.pricePerDay}</div>
-                <div className="col-6"><b>Total Price</b></div>
-                <div className="col-6 fw-semibold">₹{totalPrice}</div>
-                <div className="col-6"><b>Booking Date &amp; Time</b></div>
-                <div className="col-6">{formatDateTime(booking.bookingDate)}</div>
-                <div className="col-6"><b>From Date</b></div>
-                <div className="col-6">{formatDate(booking.fromDate)}</div>
-                <div className="col-6"><b>To Date</b></div>
-                <div className="col-6">{formatDate(booking.toDate)}</div>
-                <div className="col-6"><b>Status</b></div>
-                <div className="col-6">
-                  <span style={statusStyle}>{booking.status}</span>
+      <div className="container pt-5" style={{ maxWidth: 1050, margin: '0 auto' }}>
+
+        {/* Responsive row with two cards side by side */}
+        <div className="row gy-4 gx-4 mb-4">
+          {/* Left: Booking Details Card */}
+          <div className="col-md-7">
+            <div className="card rounded-4 shadow border-0 h-100 px-0 px-md-2 py-3">
+              <div className="row g-0 align-items-center">
+                {/* Car Image */}
+                <div className="col-sm-5 col-12 text-center">
+                  <img
+                    src={booking.carImage || DEFAULT_CAR_IMG}
+                    alt={booking.carName}
+                    className="img-fluid rounded-3 shadow-sm"
+                    style={{
+                      width: 180,
+                      height: 108,
+                      objectFit: "cover",
+                      borderRadius: 14,
+                      boxShadow: "0 2px 10px rgba(24,44,123,0.11)",
+                      marginBottom: 10
+                    }}
+                  />
+                </div>
+                {/* Details */}
+                <div className="col-sm-7 col-12 px-3">
+                  <h4 className="mb-3 fw-bold" style={{ color: "#102649", letterSpacing: "0.5px" }}>
+                    Booking Details
+                  </h4>
+                  <div className="mb-2">
+                    <b>Booking ID:</b> <span>{booking.bookingId || booking.id || "-"}</span>
+                  </div>
+                  <div className="mb-2">
+                    <b>Car Name:</b> <span>{booking.carName}</span>
+                  </div>
+                  <div className="mb-2">
+                    <b>Variant:</b> <span>{booking.variant}</span>
+                  </div>
+                  <div className="mb-2">
+                    <b>Total Days:</b> <span>{totalDays}</span>
+                  </div>
+                  <div className="mb-2">
+                    <b>Price/Day:</b> <span>₹{booking.pricePerDay}</span>
+                  </div>
+                  <div className="mb-2">
+                    <b>Total Price:</b> <span className="fw-semibold">₹{totalPrice}</span>
+                  </div>
+                  <div className="mb-2">
+                    <b>Booking Date &amp; Time:</b> <span>{formatDateTime(booking.bookingDate)}</span>
+                  </div>
+                  <div className="mb-2">
+                    <b>From:</b> <span>{formatDate(booking.fromDate)}</span>
+                  </div>
+                  <div className="mb-2">
+                    <b>To:</b> <span>{formatDate(booking.toDate)}</span>
+                  </div>
+                  <div className="mb-2">
+                    <b>Status:</b> <span style={statusStyle}>{booking.status}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          {/* Payment details */}
-          <h5 className="mt-4 mb-2 fw-bold" style={{ color: "#15418c" }}>
-            Payment Details
-          </h5>
-          <div className="row g-3 mb-3">
-            <div className="col-6"><b>Payment ID</b></div>
-            <div className="col-6">{booking.paymentId || "-"}</div>
-            <div className="col-6"><b>Booking ID</b></div>
-            <div className="col-6">{booking.bookingId || booking.id || "-"}</div>
-            <div className="col-6"><b>Payment Method</b></div>
-            <div className="col-6">{booking.paymentMethod || "-"}</div>
-            <div className="col-6"><b>Payment Status</b></div>
-            <div className="col-6">
-              <span style={paymentStyle}>{booking.paymentStatus || paymentLabel || "-"}</span>
-            </div>
-            <div className="col-6"><b>Paid On</b></div>
-            <div className="col-6">
-              {booking.paidOn ? formatDateTime(booking.paidOn) : "-"}
-            </div>
-            <div className="col-6"><b>Amount</b></div>
-            <div className="col-6">₹{booking.amount || totalPrice}</div>
-            <div className="col-6"><b>Transaction ID</b></div>
-            <div className="col-6">{booking.transactionId || "-"}</div>
-          </div>
-        </div>
-        {/* Review section */}
-        <div className="bg-white rounded-4 shadow-sm p-4 mb-4" style={{ maxWidth: 700, margin: "0 auto" }}>
-          <h4 className="mb-3 fw-bold text-primary">Add a Review</h4>
-          <form onSubmit={handleReviewSubmit}>
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Rating</label>
-              <div>
-                {[1, 2, 3, 4, 5].map(i => (
-                  <AiFillStar
-                    key={i}
-                    size={28}
-                    color={i <= stars ? "#FFD700" : "#e0e0e0"}
-                    onClick={() => setStars(i)}
-                    style={{
-                      cursor: "pointer",
-                      marginRight: 4,
-                      transition: "color 0.14s"
-                    }}
-                  />
-                ))}
-                {stars > 0 && (
-                  <span className="ms-2 text-warning" style={{ fontWeight: 500 }}>
-                    {stars} Star{stars > 1 ? "s" : ""}
-                  </span>
-                )}
+
+          {/* Right: Payment Details Card */}
+          <div className="col-md-5">
+            <div className="card rounded-4 shadow border-0 h-100 px-0 px-md-2 py-3">
+              <h5 className="mb-3 fw-bold text-center" style={{ color: "#15418c" }}>
+                Payment Details
+              </h5>
+              <div className="row mb-2">
+                <div className="col-6"><b>Payment ID:</b></div>
+                <div className="col-6">{booking.paymentId || "-"}</div>
+                <div className="col-6"><b>Booking ID:</b></div>
+                <div className="col-6">{booking.bookingId || booking.id || "-"}</div>
+                <div className="col-6"><b>Payment Method:</b></div>
+                <div className="col-6">{booking.paymentMethod || "-"}</div>
+                <div className="col-6"><b>Payment Status:</b></div>
+                <div className="col-6">
+                  <span style={paymentStyle}>{booking.paymentStatus || paymentLabel || "-"}</span>
+                </div>
+                <div className="col-6"><b>Paid On:</b></div>
+                <div className="col-6">
+                  {booking.paidOn ? formatDateTime(booking.paidOn) : "-"}
+                </div>
+                <div className="col-6"><b>Amount Paid:</b></div>
+                <div className="col-6">₹{booking.amount || totalPrice}</div>
+                <div className="col-6"><b>Transaction ID:</b></div>
+                <div className="col-6">{booking.transactionId || "-"}</div>
               </div>
             </div>
-            <div className="mb-3">
-              <label htmlFor="reviewDesc" className="form-label fw-semibold">
-                Description
-              </label>
-              <textarea
-                className="form-control"
-                id="reviewDesc"
-                name="description"
-                placeholder="Share your feedback"
-                rows={3}
-                maxLength={250}
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                required
-              />
-            </div>
-            <div className="d-grid">
-              <button
-                className="btn btn-primary fw-semibold"
-                type="submit"
-              >
-                Submit Review
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
+
+        {/* Below both cards: Review section */}
+        <div className="row mb-4">
+          <div className="col-lg-9 mx-auto">
+            <div className="bg-white rounded-4 shadow-sm p-4">
+              <h4 className="mb-3 fw-bold text-primary">Add a Review</h4>
+              <form onSubmit={handleReviewSubmit}>
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Rating</label>
+                  <div>
+                    {[1, 2, 3, 4, 5].map(i => (
+                      <AiFillStar
+                        key={i}
+                        size={28}
+                        color={i <= stars ? "#FFD700" : "#e0e0e0"}
+                        onClick={() => setStars(i)}
+                        style={{
+                          cursor: "pointer",
+                          marginRight: 4,
+                          transition: "color 0.14s"
+                        }}
+                      />
+                    ))}
+                    {stars > 0 && (
+                      <span className="ms-2 text-warning" style={{ fontWeight: 500 }}>
+                        {stars} Star{stars > 1 ? "s" : ""}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="reviewDesc" className="form-label fw-semibold">
+                    Description
+                  </label>
+                  <textarea
+                    className="form-control"
+                    id="reviewDesc"
+                    name="description"
+                    placeholder="Share your feedback"
+                    rows={3}
+                    maxLength={250}
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="d-grid">
+                  <button
+                    className="btn btn-primary fw-semibold"
+                    type="submit"
+                  >
+                    Submit Review
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );

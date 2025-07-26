@@ -31,8 +31,8 @@ const Header = () => {
   const iconStyle = { marginRight: '5px', verticalAlign: 'middle', fontSize: '1.15em' };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark shadow-sm" style={navbarStyle}>
-      <div className="container-fluid">
+    <nav className="navbar navbar-expand-lg navbar-dark shadow-sm " style={navbarStyle}>
+      <div className="container-fluid" >
         <Link
           to="/"
           className="navbar-brand fw-bold d-flex align-items-center text-light"
@@ -220,17 +220,18 @@ const Header = () => {
 
                 <li className="nav-item">
                   <Link
-                    to="/admin/customers"
+                    to="/admin/view-payments"
                     className="nav-link d-flex align-items-center text-light"
                     style={{ fontWeight: 500 }}
                   >
                     <FaRupeeSign style={iconStyle} /> Payments
                   </Link>
                 </li>
+                
 
                 <li className="nav-item">
                   <Link
-                    to="/admin/customers"
+                    to="/admin/view-feedback"
                     className="nav-link d-flex align-items-center text-light"
                     style={{ fontWeight: 500 }}
                   >
