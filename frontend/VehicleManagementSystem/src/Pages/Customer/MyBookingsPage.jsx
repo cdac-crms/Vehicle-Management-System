@@ -13,25 +13,19 @@ const headerCellStyle = {
 
 // Status badge styles
 const badgeStyles = {
-  pending: { color: '#a67300', backgroundColor: '#fffbea', fontWeight: 600, padding: '0.2em 0.7em', borderRadius: 5, display: 'inline-block' },
-  cancelled: { color: '#b71c1c', backgroundColor: '#ffdde0', fontWeight: 600, padding: '0.2em 0.85em', borderRadius: 4, display: 'inline-block' },
+  pending:  { color: '#a67300', backgroundColor: '#fffbea', fontWeight: 600, padding: '0.2em 0.7em', borderRadius: 5, display: 'inline-block' },
+  cancelled:{ color: '#b71c1c', backgroundColor: '#ffdde0', fontWeight: 600, padding: '0.2em 0.85em', borderRadius: 4, display: 'inline-block' },
   approved: { color: '#15418c', backgroundColor: '#e1edfc', fontWeight: 600, padding: '0.2em 0.8em', borderRadius: 5, display: 'inline-block' },
-  confirm: { color: '#2e7d32', backgroundColor: '#e8f5e9', fontWeight: 600, padding: '0.2em 0.8em', borderRadius: 5, display: 'inline-block' },
-  default: { color: '#2e7d32', backgroundColor: '#e8f5e9', fontWeight: 600, padding: '0.2em 0.85em', borderRadius: 4, display: 'inline-block' }
-};
-
-// Payment badge styles
-const paymentBadgeStyles = {
-  success: { color: '#0a7c36', backgroundColor: '#e3faeb', fontWeight: 600, padding: '0.2em 0.85em', borderRadius: 4, display: 'inline-block' },
-  failed: { color: '#b71c1c', backgroundColor: '#ffdde0', fontWeight: 600, padding: '0.2em 0.85em', borderRadius: 4, display: 'inline-block' }
+  confirm:  { color: '#2e7d32', backgroundColor: '#e8f5e9', fontWeight: 600, padding: '0.2em 0.8em', borderRadius: 5, display: 'inline-block' },
+  default:  { color: '#2e7d32', backgroundColor: '#e8f5e9', fontWeight: 600, padding: '0.2em 0.85em', borderRadius: 4, display: 'inline-block' }
 };
 
 // Button styles
 const actionBtnStyle = {
-  base: { border: 'none', borderRadius: 5, padding: '0.33rem 1.1rem', fontWeight: 600, cursor: 'pointer', marginRight: '0.42em', marginBottom: '0.22em' },
-  view: { background: '#2e7d32', color: '#fff' },
-  pay: { background: '#2979ff', color: '#fff' },
-  cancel: { background: '#b30527', color: '#fff' }
+  base:    { border: 'none', borderRadius: 5, padding: '0.33rem 1.1rem', fontWeight: 600, cursor: 'pointer', marginRight: '0.42em', marginBottom: '0.22em' },
+  view:    { background: '#2e7d32', color: '#fff' },
+  pay:     { background: '#2979ff', color: '#fff' },
+  cancel:  { background: '#b30527', color: '#fff' }
 };
 
 function getDayDiff(from, to) {
@@ -47,7 +41,7 @@ function formatDateTime(dateStr) {
   return new Date(dateStr).toLocaleString();
 }
 
-// HARDCODED BOOKINGS DATA (replace with API/DB fetch later)
+// HARDCODED BOOKINGS DATA (swap to API/DB fetch later)
 const initialBookings = [
   {
     id: 1,
@@ -87,11 +81,9 @@ const initialBookings = [
 
 export default function MyBookingsPage() {
   const navigate = useNavigate();
-
-  // Stateful booking data so we can update cancel status in UI (can be replaced by backend response later)
+  // Swap this state to fetched API data for backend integration
   const [bookings, setBookings] = useState(initialBookings);
 
-  // When canceled, status should update on the table
   const handleCancel = (booking) => {
     setBookings((prev) =>
       prev.map(b =>
@@ -112,8 +104,6 @@ export default function MyBookingsPage() {
 
   const handleView = (booking) => {
     toast.info(`Opening details for booking #${booking.id}`);
-    // You can configure the route as needed for your BookingDetailsPage
-    // This route pattern follows your latest flow.
     navigate(`/customer/booking-details/${booking.id}`);
   };
 
@@ -148,14 +138,13 @@ export default function MyBookingsPage() {
                 <th style={headerCellStyle}>From Date</th>
                 <th style={headerCellStyle}>To Date</th>
                 <th style={headerCellStyle}>Status</th>
-                <th style={headerCellStyle}>Payment</th>
                 <th style={headerCellStyle}>Action</th>
               </tr>
             </thead>
             <tbody>
               {bookings.length === 0 ? (
                 <tr>
-                  <td colSpan={10} style={{ textAlign: "center" }}>No Bookings Yet.</td>
+                  <td colSpan={9} style={{ textAlign: "center" }}>No Bookings Yet.</td>
                 </tr>
               ) : (
                 bookings.map(b => {
@@ -172,20 +161,7 @@ export default function MyBookingsPage() {
                     default:          statusStyle = badgeStyles.default;
                   }
 
-                  // Payment style
-                  let paymentStyle, paymentLabel;
-                  if (b.paymentStatus?.toLowerCase() === "success") {
-                    paymentStyle = paymentBadgeStyles.success;
-                    paymentLabel = "Success";
-                  } else if (b.paymentStatus?.toLowerCase() === "failed") {
-                    paymentStyle = paymentBadgeStyles.failed;
-                    paymentLabel = "Failed";
-                  } else {
-                    paymentStyle = { color: "#aaa" };
-                    paymentLabel = "-";
-                  }
-
-                  // Actions: always show View; others by status
+                  // Actions for each status
                   const actionButtons = [];
                   const statusLower = b.status?.toLowerCase();
                   if (statusLower === "pending") {
@@ -214,7 +190,6 @@ export default function MyBookingsPage() {
                         onClick={() => handlePay(b)}
                       >Pay</button>
                     );
-                    // View is always enabled
                     actionButtons.push(
                       <button
                         key="view"
@@ -224,7 +199,7 @@ export default function MyBookingsPage() {
                       >View</button>
                     );
                   } else {
-                    // For all other statuses (confirm, cancelled, payment failed, etc.) View is always enabled
+                    // For all other statuses, View always enabled
                     actionButtons.push(
                       <button
                         key="view"
@@ -249,9 +224,6 @@ export default function MyBookingsPage() {
                           {(b.status?.charAt(0).toUpperCase() || '') + (b.status?.slice(1).toLowerCase() || '')}
                         </span>
                       </td>
-                      <td>
-                        <span style={paymentStyle}>{paymentLabel}</span>
-                      </td>
                       <td>{actionButtons}</td>
                     </tr>
                   );
@@ -264,3 +236,4 @@ export default function MyBookingsPage() {
     </div>
   );
 }
+
