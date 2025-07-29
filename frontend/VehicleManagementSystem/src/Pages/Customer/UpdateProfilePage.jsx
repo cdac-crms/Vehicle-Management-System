@@ -5,19 +5,15 @@ const initialUser = {
   lastName: '',
   email: '',
   phone: '',
-  address: {
-    street: '',
-    city: '',
-    state: '',
-    postalCode: ''
-  }
+  address: ''  // Now a single string
 };
 
 const initialLicence = {
-  image: null,        // File or null
-  imageUrl: '',       // Persisted download URL
-  number: '',
-  expiry: ''
+  image: null,
+  license_image: '',
+  license_number: '',
+  expiry_date: '',
+  userId: '',
 };
 
 function MyProfilePage() {
@@ -32,17 +28,17 @@ function MyProfilePage() {
   const [editingLicence, setEditingLicence] = useState(false);
   const [loadingLicence, setLoadingLicence] = useState(false);
   const [licenceError, setLicenceError] = useState('');
+  const [hasLicense, setHasLicense] = useState(false);
 
-  // ---- LOAD DATA ON MOUNT (simulate API - switch to real backend later) ----
+  // ---- LOAD DATA ON MOUNT ----
   useEffect(() => {
     async function fetchProfile() {
       setLoadingUser(true);
       setUserError('');
       try {
-        // Replace with real API call later
-        // const resp = await fetch('/api/profile', {headers: {Authorization: ...}});
+        // const resp = await fetch('/api/profile', ...);
         // const data = await resp.json();
-        const data = initialUser; // demo initial
+        const data = initialUser; // demo only
         setUser(data);
       } catch (e) {
         setUserError('Failed to load profile.');
@@ -53,18 +49,16 @@ function MyProfilePage() {
       setLoadingLicence(true);
       setLicenceError('');
       try {
-        // Replace with real API call later
-        // Example: const resp = await fetch('/api/driving-license');
-        // const data = await resp.json();
-        const data = {...initialLicence}; // Use persisted license image URL if any
-        setLicence(data);
-        setLicencePreview(data.imageUrl || null);
+        // Replace with actual API
+        const data = { ...initialLicence };
+        setHasLicense(false);
+        setLicence({ ...initialLicence, image: null });
+        setLicencePreview(null);
       } catch (e) {
         setLicenceError('Failed to load license.');
       }
       setLoadingLicence(false);
     }
-
     fetchProfile();
     fetchLicence();
   }, []);
@@ -73,26 +67,14 @@ function MyProfilePage() {
   const handleUserChange = e =>
     setUser({ ...user, [e.target.name]: e.target.value });
 
-  const handleAddressChange = e =>
-    setUser({
-      ...user,
-      address: {
-        ...user.address,
-        [e.target.name]: e.target.value
-      }
-    });
-
   const handleUserEdit = () => setEditingUser(true);
 
-  // Save user to backend (PUT /api/profile)
   const handleUserSave = async () => {
     setLoadingUser(true);
     setUserError('');
     try {
-      // Replace with real API later:
-      // await fetch('/api/profile', { method: "PUT", headers: {...}, body: JSON.stringify(user) });
+      // await fetch('/api/profile', {...});
       setEditingUser(false);
-      // Optionally reload
     } catch (e) {
       setUserError('Failed to save profile');
     }
@@ -100,49 +82,48 @@ function MyProfilePage() {
   };
 
   const handleUserCancel = () => {
-    // Optionally refetch from backend
     setLoadingUser(true);
     setTimeout(() => {
       setUser(initialUser);
       setEditingUser(false);
       setLoadingUser(false);
-    }, 400); // Simulate load delay
+    }, 400);
   };
 
   // ---- LICENCE HANDLERS ----
-
   const handleLicenceEdit = () => setEditingLicence(true);
 
-  // Save licence + image to backend (POST/PUT /api/driving-license)
   const handleLicenceSave = async () => {
     setLoadingLicence(true);
     setLicenceError('');
-
     try {
       const formData = new FormData();
-      formData.append('licenseNumber', licence.number);
-      formData.append('expiry', licence.expiry);
+      formData.append('license_number', licence.license_number);
+      formData.append('expiry_date', licence.expiry_date);
+      if (licence.userId) formData.append('userId', licence.userId);
       if (licence.image) formData.append('file', licence.image);
 
-      // Replace API call with your backend POST/PUT
-      // Example:
-      /* 
-      const resp = await fetch('/api/driving-license', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ...' },
-        body: formData
-      });
-      const result = await resp.json();
-      setLicence(prev => ({
-        ...prev,
-        imageUrl: result.licenseImage,   // returned from server response
-      }));
-      setLicencePreview(result.licenseImage);
-      */
+      // const method = hasLicense ? 'PUT' : 'POST';
+      // const resp = await fetch('/api/driving-license', {
+      //   method,
+      //   headers: { Authorization: `Bearer ...` },
+      //   body: formData
+      // });
+      // if (!resp.ok) throw new Error('Failed to save license');
+      // const result = await resp.json();
+      // setLicence({
+      //   ...licence,
+      //   license_image: result.license_image,
+      //   license_number: result.license_number,
+      //   expiry_date: result.expiry_date,
+      //   userId: result.userId,
+      //   image: null
+      // });
+      // setLicencePreview(result.license_image);
+      // setHasLicense(true);
 
       setEditingLicence(false);
 
-      // DEMO: Show local preview as "uploaded"
       if (licence.image) {
         setLicencePreview(URL.createObjectURL(licence.image));
       }
@@ -153,7 +134,6 @@ function MyProfilePage() {
   };
 
   const handleLicenceCancel = () => {
-    // Optionally refetch licence data from backend
     setLicence(initialLicence);
     setLicencePreview(null);
     setEditingLicence(false);
@@ -165,7 +145,6 @@ function MyProfilePage() {
       [e.target.name]: e.target.value
     });
 
-  // When image is chosen, show preview; when uploading, it will be sent as FormData
   const handleLicenceImageChange = e => {
     const file = e.target.files[0];
     if (file) {
@@ -177,7 +156,6 @@ function MyProfilePage() {
     }
   };
 
-  // ---- BUTTON STYLES ----
   const btnStyle = {
     minWidth: '80px',
     marginLeft: '0.5rem',
@@ -232,7 +210,6 @@ function MyProfilePage() {
           </div>
           {userError && <div className="alert alert-danger py-1">{userError}</div>}
           <form>
-            {/* Profile fields */}
             <div className="mb-2">
               <label className="form-label fw-semibold">First Name</label>
               <input
@@ -281,52 +258,18 @@ function MyProfilePage() {
                 autoComplete="tel"
               />
             </div>
+            {/* SINGLE ADDRESS FIELD */}
             <div className="mb-2">
-              <label className="form-label">Street Address</label>
+              <label className="form-label fw-semibold">Address</label>
               <input
-                name="street"
+                name="address"
                 type="text"
                 className="form-control"
-                value={user.address.street}
-                onChange={handleAddressChange}
+                value={user.address}
+                onChange={handleUserChange}
                 disabled={!editingUser || loadingUser}
-                autoComplete="street-address"
+                autoComplete="address-line1"
               />
-            </div>
-            <div className="row">
-              <div className="col-md-4 mb-2">
-                <label className="form-label">City</label>
-                <input
-                  name="city"
-                  type="text"
-                  className="form-control"
-                  value={user.address.city}
-                  onChange={handleAddressChange}
-                  disabled={!editingUser || loadingUser}
-                />
-              </div>
-              <div className="col-md-4 mb-2">
-                <label className="form-label">State</label>
-                <input
-                  name="state"
-                  type="text"
-                  className="form-control"
-                  value={user.address.state}
-                  onChange={handleAddressChange}
-                  disabled={!editingUser || loadingUser}
-                />
-              </div>
-              <div className="col-md-4 mb-2">
-                <label className="form-label">Postal Code</label>
-                <input
-                  name="postalCode"
-                  type="text"
-                  className="form-control"
-                  value={user.address.postalCode}
-                  onChange={handleAddressChange}
-                  disabled={!editingUser || loadingUser}
-                />
-              </div>
             </div>
           </form>
         </div>
@@ -376,7 +319,7 @@ function MyProfilePage() {
                 onChange={handleLicenceImageChange}
                 disabled={!editingLicence || loadingLicence}
               />
-              {(licencePreview || licence.imageUrl) && (
+              {(licencePreview || licence.license_image) && (
                 <div
                   className="d-flex justify-content-center align-items-center mt-3"
                   style={{
@@ -390,7 +333,7 @@ function MyProfilePage() {
                   }}
                 >
                   <img
-                    src={licencePreview || licence.imageUrl}
+                    src={licencePreview || licence.license_image}
                     alt="Licence Preview"
                     style={{
                       width: '80%',
@@ -406,10 +349,10 @@ function MyProfilePage() {
             <div className="mb-2">
               <label className="form-label fw-semibold">Licence Number</label>
               <input
-                name="number"
+                name="license_number"
                 type="text"
                 className="form-control"
-                value={licence.number}
+                value={licence.license_number}
                 onChange={handleLicenceChange}
                 disabled={!editingLicence || loadingLicence}
               />
@@ -417,10 +360,10 @@ function MyProfilePage() {
             <div className="mb-2">
               <label className="form-label fw-semibold">Expiry Date</label>
               <input
-                name="expiry"
+                name="expiry_date"
                 type="date"
                 className="form-control"
-                value={licence.expiry}
+                value={licence.expiry_date}
                 onChange={handleLicenceChange}
                 disabled={!editingLicence || loadingLicence}
               />
