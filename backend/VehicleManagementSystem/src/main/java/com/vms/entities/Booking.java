@@ -1,7 +1,9 @@
-package com.VehicleManagementSystem.entities;
+package com.vms.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import com.vms.entities.enums.BookingStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

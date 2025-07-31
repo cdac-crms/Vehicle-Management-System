@@ -1,4 +1,4 @@
-package com.VehicleManagementSystem.entities;
+package com.vms.entities.enums;
 
 public enum FuelType {
 	    PETROL,
