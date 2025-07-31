@@ -13,7 +13,8 @@
 	<artifactId>VehicleManagementSystem</artifactId>
 	<version>0.0.1</version>
 	<name>VehicleManagementSystem</name>
-	<description>VehicleManagementSystem</description>
+	<description>A full-stack Vehicle Rental Management System built using Spring Boot for the backend. The system allows administrators to manage car companies, car variants, and vehicles, while customers can register, view available cars, and make bookings. It includes role-based access, booking history, payment processing, and audit logging for a complete rental experience.
+</description>
 	<url />
 	<licenses>
 		<license />
