@@ -27,11 +27,11 @@ public class Review extends BaseEntity{
 
 	    @Column(name = "message", columnDefinition = "TEXT")
 	    private String message;
-//	    
-//	    @ManyToOne(fetch = FetchType.LAZY)
-//	    @JoinColumn(name = "vehicle_id")
-//	    private Vehicle vehicle;
-//
+	    
+	    @ManyToOne(fetch = FetchType.LAZY)
+	    @JoinColumn(name = "vehicle_id")
+	    private Vehicle vehicle;
+
 //	   //  in vehicle table
 //	    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
 //	    private List<Review> reviews = new ArrayList<>();

@@ -2,11 +2,14 @@ package com.vms.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.vms.entities.enums.AvailabilityStatus;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -14,10 +17,15 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 
 
 	public class Vehicle extends BaseEntity {
 
+		
+	    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+	    private List<Review> reviews = new ArrayList<>();
+		
 	    @ManyToOne(fetch = FetchType.LAZY)
 	    @JoinColumn(name = "variant_id", nullable = false)
 	    private Variant variant;
