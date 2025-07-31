@@ -9,6 +9,9 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.vms.entities.enums.PaymentMethod;
+import com.vms.entities.enums.PaymentStatus;
+
 @Entity
 @Getter
 @Setter
@@ -48,18 +51,6 @@ public class Payment extends BaseEntity{
     @Column(name = "payment_status", nullable = false)
     private PaymentStatus paymentStatus = PaymentStatus.PENDING; // PAID, FAILED, PENDING
     
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "booking_id", nullable = false)
-//    private Booking booking;
 
-    
-
-    public enum PaymentMethod {
-        CARD, UPI, NETBANKING, CASH, RAZORPAY
-    }
-
-    public enum PaymentStatus {
-        PAID, FAILED, PENDING
-    }
 }
 
