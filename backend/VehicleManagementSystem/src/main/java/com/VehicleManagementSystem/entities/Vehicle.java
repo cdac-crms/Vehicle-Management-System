@@ -49,4 +49,4 @@ import jakarta.persistence.ManyToOne;
 	    private String x2;
 	}
 
-}
+
