@@ -1,5 +1,7 @@
-package com.VehicleManagementSystem.entities;
+package com.vms.entities;
 
+
+import com.vms.entities.enums.FuelType;
 
 import jakarta.persistence.*;
 import lombok.*;

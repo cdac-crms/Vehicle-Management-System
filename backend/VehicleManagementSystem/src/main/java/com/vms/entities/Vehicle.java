@@ -1,9 +1,11 @@
-package com.VehicleManagementSystem.entities;
+package com.vms.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.hibernate.annotations.UpdateTimestamp;
+
+import com.vms.entities.enums.AvailabilityStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
