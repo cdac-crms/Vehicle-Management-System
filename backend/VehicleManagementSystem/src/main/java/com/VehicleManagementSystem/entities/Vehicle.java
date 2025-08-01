@@ -1,4 +1,4 @@
-package com.vms.entities;
+package com.VehicleManagementSystem.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.hibernate.annotations.UpdateTimestamp;
 
-import com.vms.entities.enums.AvailabilityStatus;
+import com.VehicleManagementSystem.entities.enums.AvailabilityStatus;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

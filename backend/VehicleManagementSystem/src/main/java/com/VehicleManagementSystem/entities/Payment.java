@@ -1,4 +1,4 @@
-package com.vms.entities;
+package com.VehicleManagementSystem.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,8 +9,8 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.vms.entities.enums.PaymentMethod;
-import com.vms.entities.enums.PaymentStatus;
+import com.VehicleManagementSystem.entities.enums.PaymentMethod;
+import com.VehicleManagementSystem.entities.enums.PaymentStatus;
 
 @Entity
 @Getter
