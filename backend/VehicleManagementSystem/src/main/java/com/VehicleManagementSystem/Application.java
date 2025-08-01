@@ -1,4 +1,4 @@
-package com.vms;
+package com.VehicleManagementSystem;
 
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;

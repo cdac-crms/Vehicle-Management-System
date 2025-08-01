@@ -1,4 +1,4 @@
-package com.vms.entities;
+package com.VehicleManagementSystem.entities;
 
 import java.time.LocalDate;
 
