@@ -1,4 +1,4 @@
-package com.VehicleManagementSystem.entities.enums;
+package com.vms.entities.enums;
 
 public enum PaymentMethod {
 
