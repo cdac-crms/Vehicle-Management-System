@@ -1,5 +1,4 @@
-// AuthenticationsServiceImpl.java
-package com.vms.services;
+package com.vms.servicesImpl;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
