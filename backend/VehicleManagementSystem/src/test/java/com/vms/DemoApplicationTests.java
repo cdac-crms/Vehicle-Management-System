@@ -1,4 +1,4 @@
-package com.VehicleManagementSystem;
+package com.vms;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
