@@ -1,6 +1,7 @@
 package com.vms.servicesImpl;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.vms.custom_exceptions.ApiException;
 import com.vms.dao.CompanyDao;
 import com.vms.dto.request.AddCompanyDto;
+import com.vms.dto.response.GetAllCompanyDto;
 import com.vms.entities.Company;
 import com.vms.services.CompanyService;
 
@@ -35,6 +37,16 @@ public class CompanyServiceImpl  implements CompanyService{
 		companyDao.save(company);
 		
 		return "Company Added Succesfully";
+	}
+	
+	
+	@Override
+	public List<GetAllCompanyDto> getAllCompanies() {
+	    List<Company> companies = companyDao.findAll();
+
+	    return companies.stream()
+	            .map(company -> modelMapper.map(company, GetAllCompanyDto.class))
+	            .toList();
 	}
 
 }
