@@ -41,6 +41,7 @@ public class Booking extends BaseEntity {
     private String x1;
     private String x2;
 
-    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "payment_id") // foreign key column in booking table
     private Payment payment;
 }
