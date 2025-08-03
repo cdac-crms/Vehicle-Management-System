@@ -84,7 +84,7 @@ public class VehicleServiceImpl  implements VehicleService{
                 .orElseThrow(() -> new ResourceNotFoundException("VariantId" + dto.getVariant()));
 
         vehicle.setVariant(variant);
-        vehicle.setRegistrationNumber(dto.getRegistrationNumber());
+//        vehicle.setRegistrationNumber(dto.getRegistrationNumber());
         vehicle.setColor(dto.getColor());
         vehicle.setImage(dto.getImage());
         vehicle.setAvailabilityStatus(dto.getAvailabilityStatus());

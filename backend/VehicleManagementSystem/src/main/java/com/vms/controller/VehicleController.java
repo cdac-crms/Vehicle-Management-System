@@ -25,14 +25,14 @@ public class VehicleController {
 
 	private final VehicleService vehicleService;
 	
-	@PostMapping("/add-vehicle")
+	@PostMapping("/addVehicle")
 	public ResponseEntity<?>addVehicle(@RequestBody @Valid VehicleRequestDto addVehicleDto )
 	{
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(vehicleService.addVehicle(addVehicleDto));
 	}
 	
-		@GetMapping("/get-all")
+		@GetMapping("/getAllVehicles")
 		public ResponseEntity<?> getAllVehicles() {
 			return ResponseEntity.ok(vehicleService.getAllVehicles());
 		}

@@ -2,14 +2,18 @@ package com.vms.servicesImpl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import com.vms.custom_exceptions.ApiException;
+import com.vms.custom_exceptions.ResourceNotFoundException;
 import com.vms.dao.CompanyDao;
 import com.vms.dao.VariantDao;
 import com.vms.dto.request.AddVariantDto;
+import com.vms.dto.response.VariantResponseDto;
 import com.vms.entities.Variant;
 import com.vms.services.VariantService;
 
@@ -45,5 +49,39 @@ public class VariantServiceImpl  implements VariantService{
 
 		return "Variant added succesfully.";
 	}
+	
+	
+	
+	
+	 @Override
+	    public List<VariantResponseDto> getAllVariants() {
+	        return variantdao.findAll().stream()
+	                .map(variant -> VariantResponseDto.builder()
+	                        .id(variant.getId())
+	                        .name(variant.getName())
+	                        .description(variant.getDescription())
+	                        .seatingCapacity(variant.getSeatingCapacity())
+	                        .fuelType(variant.getFuelType())
+	                        .companyName(variant.getCompany().getName())
+	                        .build())
+	                .collect(Collectors.toList());
+	    }
+
+	    @Override
+	    public VariantResponseDto getVariantById(Long variantId) {
+	        Variant variant = variantdao.findById(variantId)
+	                .orElseThrow(() -> new ResourceNotFoundException("VariantID " +  variantId));
+
+	        return VariantResponseDto.builder()
+	                .id(variant.getId())
+	                .name(variant.getName())
+	                .description(variant.getDescription())
+	                .seatingCapacity(variant.getSeatingCapacity())
+	                .fuelType(variant.getFuelType())
+	                .companyName(variant.getCompany().getName())
+	                .build();
+	    }
+	
+	
 
 }
