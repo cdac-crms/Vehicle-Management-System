@@ -17,7 +17,7 @@ import com.vms.entities.enums.PaymentStatus;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "payments")
+@Table(name = "payment")
 @AttributeOverride(name = "id", column = @Column(name = "payment_id"))
 public class Payment extends BaseEntity{
 

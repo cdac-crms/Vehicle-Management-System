@@ -17,7 +17,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "help_support")
+@Table(name = "helpSupport")
 @AttributeOverride(name = "id", column = @Column(name = "helpsupport_id"))
 
 public class HelpSupport extends BaseEntity {

@@ -17,7 +17,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "reviews")
+@Table(name = "review")
 @AttributeOverride(name = "id", column = @Column(name = "review_id"))
 
 public class Review extends BaseEntity{
