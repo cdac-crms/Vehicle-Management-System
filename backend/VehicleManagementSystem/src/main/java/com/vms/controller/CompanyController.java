@@ -3,6 +3,7 @@ package com.vms.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,13 +16,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/admin/add-company")
+@RequestMapping("/admin/company")
 @RequiredArgsConstructor
 public class CompanyController {
 	
 	private final CompanyService companyService;
 	
-	@PostMapping("/")
+	@PostMapping("/addCompany")
 	public ResponseEntity<?> addCompany(@RequestBody @Valid AddCompanyDto addCompanyDto )
 	{
 		return ResponseEntity.status(HttpStatus.CREATED)
@@ -32,6 +33,11 @@ public class CompanyController {
 	@GetMapping("/getAllCompanies")
 	public ResponseEntity<?> getAllCompanies() {
 	    return ResponseEntity.ok(companyService.getAllCompanies());
+	}
+	
+	@GetMapping("/getCompany/{companyId}")
+	public ResponseEntity<?> getCompanyById(@PathVariable Long companyId) {
+		return ResponseEntity.ok(companyService.getCompanyById(companyId));
 	}
 
 	

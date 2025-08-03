@@ -7,9 +7,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import com.vms.custom_exceptions.ApiException;
+import com.vms.custom_exceptions.ResourceNotFoundException;
 import com.vms.dao.CompanyDao;
 import com.vms.dto.request.AddCompanyDto;
 import com.vms.dto.response.GetAllCompanyDto;
+import com.vms.dto.response.GetOneCompanyDto;
 import com.vms.entities.Company;
 import com.vms.services.CompanyService;
 
@@ -48,5 +50,14 @@ public class CompanyServiceImpl  implements CompanyService{
 	            .map(company -> modelMapper.map(company, GetAllCompanyDto.class))
 	            .toList();
 	}
+	
+	@Override
+	public GetOneCompanyDto getCompanyById(Long companyId) {
+		Company company = companyDao.findById(companyId)
+				.orElseThrow(() -> new ResourceNotFoundException("CompanyID"+  companyId));
+		
+		return modelMapper.map(company, GetOneCompanyDto.class);
+	}
+	
 
 }
