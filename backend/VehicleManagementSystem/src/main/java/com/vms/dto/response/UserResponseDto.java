@@ -1,6 +1,6 @@
 package com.vms.dto.response;
 
-import com.vms.entities.UserRole;
+import com.vms.entities.enums.UserRole;
 import lombok.*;
 
 @Getter
