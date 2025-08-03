@@ -11,6 +11,8 @@ import java.util.List;
 @Table(name = "vehicle")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class Vehicle extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
