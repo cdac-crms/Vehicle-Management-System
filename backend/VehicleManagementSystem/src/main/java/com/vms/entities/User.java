@@ -26,7 +26,7 @@ public class User extends BaseEntity {
     @Column(name = "contact_no")
     private String contactNo;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 255, nullable = false)
     private String password;
 
     @Transient
