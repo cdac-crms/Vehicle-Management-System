@@ -18,7 +18,6 @@ public class VehicleRequestDto {
 
     private String color;
 
-    private String image;
 
     private AvailabilityStatus availabilityStatus;
 
