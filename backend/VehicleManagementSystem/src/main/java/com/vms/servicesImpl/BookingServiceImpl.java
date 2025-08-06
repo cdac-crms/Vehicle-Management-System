@@ -35,13 +35,13 @@ public class BookingServiceImpl implements BookingService {
                     AllBookingDto dto = new AllBookingDto();
                     dto.setId(booking.getId());
                     dto.setCustomerName(booking.getUser().getFirstName() + " " + booking.getUser().getLastName());
-                    dto.setVehicle(booking.getVehicle().getVariant().getName());
-                    dto.setRegistrationNo(booking.getVehicle().getRegistrationNumber());
+                    dto.setName(booking.getVehicle().getVariant().getName());
+                    dto.setRegistrationNumber(booking.getVehicle().getRegistrationNumber());
                     dto.setBookingDate(booking.getBookingDate());
                     dto.setStartDate(booking.getStartDate());
                     dto.setEndDate(booking.getEndDate());
                     dto.setTotalDays((int) (booking.getEndDate().toEpochDay() - booking.getStartDate().toEpochDay()));
-                    dto.setRentPerDay(booking.getVehicle().getPricePerDay().doubleValue());
+                    dto.setPricePerDay(booking.getVehicle().getPricePerDay().doubleValue());
                     dto.setTotalAmount(booking.getTotalAmount().doubleValue());
                     dto.setBookingStatus(booking.getBookingStatus());
                     return dto;
@@ -59,8 +59,8 @@ public class BookingServiceImpl implements BookingService {
 
         return OneBookingDto.builder()
                 // Vehicle Info
-                .variantName(booking.getVehicle().getVariant().getName())
-                .companyName(booking.getVehicle().getVariant().getCompany().getName())
+                .name(booking.getVehicle().getVariant().getName())
+//                .companyName(booking.getVehicle().getVariant().getCompany().getName())
                 .fuelType(booking.getVehicle().getVariant().getFuelType())
                 .pricePerDay(booking.getVehicle().getPricePerDay().doubleValue())
                 .registrationNumber(booking.getVehicle().getRegistrationNumber())
@@ -70,7 +70,7 @@ public class BookingServiceImpl implements BookingService {
                 .bookingDate(booking.getBookingDate())
                 .startDate(booking.getStartDate())
                 .endDate(booking.getEndDate())
-                .totalFare(booking.getTotalAmount().doubleValue())
+                .totalAmount(booking.getTotalAmount().doubleValue())
                 .bookingStatus(booking.getBookingStatus())
 
                 // Customer Info
@@ -81,6 +81,7 @@ public class BookingServiceImpl implements BookingService {
 
                 // Driving License Info
                 .licenseNumber(license.getLicenseNumber())
+                .expiryDate(license.getExpiryDate())
                 .licenseImage(license.getLicenseImage())
                 .build();
     }
