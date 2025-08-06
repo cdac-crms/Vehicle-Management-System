@@ -2,6 +2,7 @@ package com.vms.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +23,7 @@ public class VariantController {
 
 	private final VariantService variantService;
 	
+	@CrossOrigin(origins = "http://localhost:5174")
 	@PostMapping("/addVariant")
 	public ResponseEntity<?> addVariant(@RequestBody @Valid AddVariantDto addVariantDto )
 	{
@@ -29,14 +31,14 @@ public class VariantController {
 				.body(variantService.addVariant(addVariantDto));
 	}
 	
-	
+	@CrossOrigin(origins = "http://localhost:5174")
 	  @GetMapping("/getAllVariants")
 	    public ResponseEntity<?> getAllVariants() {
 	        return ResponseEntity.ok(variantService.getAllVariants());
 	    }
 	  
 	  
-
+	@CrossOrigin(origins = "http://localhost:5174")
 	    @GetMapping("/getVariant/{variantId}")
 	    public ResponseEntity<?> getVariantById(@PathVariable Long variantId) {
 	        return ResponseEntity.ok(variantService.getVariantById(variantId));
