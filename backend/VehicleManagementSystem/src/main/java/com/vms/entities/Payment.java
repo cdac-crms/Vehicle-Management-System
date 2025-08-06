@@ -24,7 +24,10 @@ public class Payment extends BaseEntity{
 // In Booking Class Add this below:
 //	@OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
 //	private Payment payment;
-
+	
+	@OneToOne
+	@JoinColumn(name = "booking_id")
+	private Booking booking;
 
     @Column(name = "amount", precision = 10, scale = 2)
     private BigDecimal amount;
