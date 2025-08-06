@@ -1,106 +1,201 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { addVariant, getAllVariants } from '../../services/VariantService';
+import { getAllCompanies } from '../../services/CompanyService';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const AddVariantForm = () => {
   const [formData, setFormData] = useState({
+    companyId: '',
     name: '',
     description: '',
-    company: '',
+    seatingCapacity: '',
     fuelType: '',
-    seatCapacity: '',
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  const [companies, setCompanies] = useState([]);
+  const [variants, setVariants] = useState([]);
+  const [message, setMessage] = useState({ type: '', text: '' });
+
+  useEffect(() => {
+    loadCompanies();
+    loadVariants();
+  }, []);
+
+  const loadCompanies = async () => {
+    try {
+      const data = await getAllCompanies();
+      setCompanies(data);
+    } catch (error) {
+      setMessage({ type: 'danger', text: 'Failed to load companies.' });
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const data = new FormData();
-    for (let key in formData) {
-      data.append(key, formData[key]);
+  const loadVariants = async () => {
+    try {
+      const data = await getAllVariants();
+      setVariants(data);
+    } catch (error) {
+      setMessage({ type: 'danger', text: 'Failed to load variants.' });
     }
+  };
 
-    console.log("Variant submitted", formData);
+  const handleChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await addVariant({
+        ...formData,
+
+        fuelType: formData.fuelType.toUpperCase(),
+        companyId: Number(formData.companyId),
+        seatingCapacity: Number(formData.seatingCapacity),
+      });
+
+      setMessage({ type: 'success', text: 'Variant added successfully!' });
+      setFormData({
+        companyId: '',
+        name: '',
+        description: '',
+        seatingCapacity: '',
+        fuelType: '',
+      });
+      loadVariants(); // Refresh the list
+    } catch (err) {
+      setMessage({ type: 'danger', text: err.response?.data?.message || 'Failed to add variant.' });
+    }
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: '700px' }}>
-      <h3 className="text-center mb-4">Add Car Variant</h3>
-      <form onSubmit={handleSubmit} className="border rounded p-4 bg-white shadow-sm">
-        <div className="row g-3">
+    <div className="container mt-5" style={{ fontFamily: 'Segoe UI' }}>
+      <h2 className="text-center mb-4" style={{ color: '#102649' }}>Manage Variants</h2>
 
-          <div className="col-md-6">
-            <label className="form-label">Company</label>
-            <input
-              type="text"
-              className="form-control"
-              name="company"
-              value={formData.company}
-              required
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-6">
-            <label className="form-label">Variant Name</label>
-            <input
-              type="text"
-              className="form-control"
-              name="name"
-              value={formData.name}
-              required
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-12">
-            <label className="form-label">Variant Description</label>
-            <textarea
-              type="text"
-              className="form-control"
-              name="description"
-              value={formData.description}
-              required
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-6">
-            <label className="form-label">Fuel Type</label>
-            <select
-              className="form-select"
-              name="fuelType"
-              value={formData.fuelType}
-              required
-              onChange={handleChange}
-            >
-              <option value="">Select Fuel Type</option>
-              <option value="Petrol">Petrol</option>
-              <option value="Diesel">Diesel</option>
-              <option value="Electric">Electric</option>
-              <option value="Hybrid">Hybrid</option>
-            </select>
-          </div>
-
-          <div className="col-md-6">
-            <label className="form-label">Seat Capacity</label>
-            <input
-              type="number"
-              className="form-control"
-              name="seatCapacity"
-              value={formData.seatCapacity}
-              required
-              onChange={handleChange}
-            />
-          </div>
-
+      {/* Form Card */}
+      <div className="card shadow mb-5" style={{ border: '1px solid #102649' }}>
+        <div className="card-header text-white" style={{ backgroundColor: '#102649' }}>
+          <h4 className="mb-0 mt-2 text-center">Add New Variant</h4>
         </div>
+        <div className="card-body bg-light">
+          {message.text && (
+            <div className={`alert alert-${message.type} text-center`} role="alert">
+              {message.text}
+            </div>
+          )}
 
-        <div className="text-center mt-4">
-          <button type="submit" className="btn btn-primary px-4">Add Variant</button>
+          <form onSubmit={handleSubmit}>
+            <div className="row g-3">
+              <div className="col-md-6">
+                <label className="form-label">Company</label>
+                <select
+                  className="form-select"
+                  name="companyId"
+                  value={formData.companyId}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Company</option>
+                  {companies.map((company) => (
+                    <option key={company.id} value={company.id}>
+                      {company.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label">Variant Name</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="name"
+                  value={formData.name}
+                  required
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="col-md-12">
+                <label className="form-label">Variant Description</label>
+                <textarea
+                  className="form-control"
+                  name="description"
+                  rows="3"
+                  value={formData.description}
+                  required
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label">Fuel Type</label>
+                <select
+                  className="form-select"
+                  name="fuelType"
+                  value={formData.fuelType}
+                  required
+                  onChange={handleChange}
+                >
+                  <option value="">Select Fuel Type</option>
+                  <option value="Petrol">Petrol</option>
+                  <option value="Diesel">Diesel</option>
+                  <option value="Electric">Electric</option>
+                  <option value="Hybrid">Hybrid</option>
+                </select>
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label">Seating Capacity</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  name="seatingCapacity"
+                  value={formData.seatingCapacity}
+                  required
+                  min="1"
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="text-center mt-4">
+              <button type="submit" className="btn text-white px-4" style={{ backgroundColor: '#102649' }}>
+                Add Variant
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
+
+      {/* Variants List */}
+      <h3 className="mb-3 text-center" style={{ color: '#102649' }}> All Variants</h3>
+      <div className="row">
+        {variants.map((variant) => (
+          <div className="col-md-4 mb-4" key={variant.id}>
+            <div className="card h-100 shadow border-0">
+              <div className="card-body">
+                <h5 className="card-title text-center fw-bold" style={{ color: '#102649' }}>
+                  {variant.name}
+                </h5>
+                <p className="card-text text-center text-muted">{variant.description}</p>
+                <ul className="list-group list-group-flush text-center">
+                  <li className="list-group-item">Fuel Type: {variant.fuelType}</li>
+                  <li className="list-group-item">Seats: {variant.seatingCapacity}</li>
+                  {/* <li className="list-group-item">Company: {variant.company?.name || 'N/A'}</li> */}
+                </ul>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {variants.length === 0 && (
+          <p className="text-muted text-center">No variants found.</p>
+        )}
+      </div>
     </div>
   );
 };
