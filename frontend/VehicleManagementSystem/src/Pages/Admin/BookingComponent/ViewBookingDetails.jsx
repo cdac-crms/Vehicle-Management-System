@@ -104,6 +104,9 @@ const ViewBookingDetails = () => {
             <p>
               <strong>DL Number:</strong> {booking.dlNumber}
             </p>
+            <p>
+              <strong>Expiry Date::</strong> {booking.expiryDate}
+            </p>
             <div className="mt-2">
               <img
                 src={

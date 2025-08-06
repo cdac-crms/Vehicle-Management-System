@@ -14,8 +14,8 @@ import java.time.LocalDate;
 public class OneBookingDto {
 
     // Vehicle Info
-    private String variantName;
-    private String companyName;
+    private String name;
+   // private String companyName;
     private FuelType fuelType;
     private double pricePerDay;
     private String registrationNumber;
@@ -25,7 +25,7 @@ public class OneBookingDto {
     private LocalDate bookingDate;
     private LocalDate startDate;
     private LocalDate endDate;
-    private double totalFare;
+    private double totalAmount;
     private BookingStatus bookingStatus;
    
 
@@ -37,5 +37,6 @@ public class OneBookingDto {
 
     // Driving License Info
     private Long licenseNumber;
+    private LocalDate expiryDate;
     private String licenseImage;
 }

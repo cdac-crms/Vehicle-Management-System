@@ -18,13 +18,13 @@ public class AllBookingDto {
 
     private Long id;
     private String customerName;
-    private String vehicle;
-    private String registrationNo;
+    private String name;
+    private String registrationNumber;
     private LocalDate bookingDate;
     private LocalDate startDate;
     private LocalDate endDate;
     private int totalDays;
-    private double rentPerDay;
+    private double pricePerDay;
     private double totalAmount;
     private BookingStatus bookingStatus;
 
