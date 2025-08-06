@@ -75,7 +75,9 @@ public class AuthenticationsServiceImpl implements AuthenticationsService {
 
         // Generate JWT token
         String token = jwtUtil.generateToken(user.getEmail(), user.getUserRole().name());
+//        String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getUserRole().name());
 
+        
         // Map and return response with token
         UserResponseDto response = modelMapper.map(user, UserResponseDto.class);
         response.setToken(token);
