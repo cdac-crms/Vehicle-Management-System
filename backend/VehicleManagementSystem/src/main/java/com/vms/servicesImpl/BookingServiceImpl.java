@@ -6,6 +6,7 @@ import com.vms.dto.response.OneBookingDto;
 import com.vms.entities.Booking;
 import com.vms.entities.DrivingLicense;
 import com.vms.entities.User;
+import com.vms.entities.enums.BookingStatus;
 import com.vms.services.BookingService;
 import com.vms.custom_exceptions.ResourceNotFoundException;
 
@@ -85,4 +86,15 @@ public class BookingServiceImpl implements BookingService {
                 .licenseImage(license.getLicenseImage())
                 .build();
     }
+    
+    @Override
+    public String updateBookingStatus(Long bookingId, BookingStatus status) {
+        Booking booking = bookingDao.findById(bookingId)
+            .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
+
+        booking.setBookingStatus(status);
+        bookingDao.save(booking); // Save updated status
+        return "Booking status updated to: " + status;
+    }
+
 }

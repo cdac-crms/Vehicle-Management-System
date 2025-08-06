@@ -32,10 +32,6 @@ public class Review extends BaseEntity{
 	    @JoinColumn(name = "vehicle_id")
 	    private Vehicle vehicle;
 
-//	   //  in vehicle table
-//	    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
-//	    private List<Review> reviews = new ArrayList<>();
-
 	     @ManyToOne(fetch = FetchType.LAZY, optional = false)
 		 @JoinColumn(name = "user_id", nullable = false)
 		 private User user;
