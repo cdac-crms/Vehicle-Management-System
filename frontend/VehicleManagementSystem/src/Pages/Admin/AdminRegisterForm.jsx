@@ -88,7 +88,13 @@ const AdminRegisterForm = () => {
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center vh-100" style={{ backgroundColor: '#f4f6fc' }}>
+<div
+  className="container-fluid d-flex justify-content-center align-items-center"
+  style={{
+    minHeight: '100vh',
+    backgroundColor: '#f4f6fc'
+  }}
+>
       <div
         className="card shadow-lg p-4 rounded-4"
         style={{
