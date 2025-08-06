@@ -21,6 +21,7 @@ export const addVehicle = async (formData) => {
 export const getAllVehicles = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/getAllVehicles`);
+    console.log("Fetched vehicles:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching vehicles:", error.response?.data?.message || error.message);
@@ -32,6 +33,7 @@ export const getAllVehicles = async () => {
 export const getVehicleById = async (vehicleId) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/${vehicleId}`);
+    console.log("Fetched vehicle:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching vehicle:", error.response?.data?.message || error.message);
