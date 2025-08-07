@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { jwtDecode } from "jwt-decode";
+
+// Config
+const API_BASE = 'http://localhost:8080';
 
 // Header cell style
 const headerCellStyle = {
@@ -13,24 +18,24 @@ const headerCellStyle = {
 
 // Status badge styles
 const badgeStyles = {
-  pending:  { color: '#a67300', backgroundColor: '#fffbea', fontWeight: 600, padding: '0.2em 0.7em', borderRadius: 5, display: 'inline-block' },
-  cancelled:{ color: '#b71c1c', backgroundColor: '#ffdde0', fontWeight: 600, padding: '0.2em 0.85em', borderRadius: 4, display: 'inline-block' },
+  pending: { color: '#a67300', backgroundColor: '#fffbea', fontWeight: 600, padding: '0.2em 0.7em', borderRadius: 5, display: 'inline-block' },
+  cancelled: { color: '#b71c1c', backgroundColor: '#ffdde0', fontWeight: 600, padding: '0.2em 0.85em', borderRadius: 4, display: 'inline-block' },
   approved: { color: '#15418c', backgroundColor: '#e1edfc', fontWeight: 600, padding: '0.2em 0.8em', borderRadius: 5, display: 'inline-block' },
-  confirm:  { color: '#2e7d32', backgroundColor: '#e8f5e9', fontWeight: 600, padding: '0.2em 0.8em', borderRadius: 5, display: 'inline-block' },
-  default:  { color: '#2e7d32', backgroundColor: '#e8f5e9', fontWeight: 600, padding: '0.2em 0.85em', borderRadius: 4, display: 'inline-block' }
+  confirmed: { color: '#2e7d32', backgroundColor: '#e8f5e9', fontWeight: 600, padding: '0.2em 0.8em', borderRadius: 5, display: 'inline-block' },
+  default: { color: '#2e7d32', backgroundColor: '#e8f5e9', fontWeight: 600, padding: '0.2em 0.85em', borderRadius: 4, display: 'inline-block' }
 };
 
 // Button styles
 const actionBtnStyle = {
-  base:    { border: 'none', borderRadius: 5, padding: '0.33rem 1.1rem', fontWeight: 600, cursor: 'pointer', marginRight: '0.42em', marginBottom: '0.22em' },
-  view:    { background: '#2e7d32', color: '#fff' },
-  pay:     { background: '#2979ff', color: '#fff' },
-  cancel:  { background: '#b30527', color: '#fff' }
+  base: { border: 'none', borderRadius: 5, padding: '0.33rem 1.1rem', fontWeight: 600, cursor: 'pointer', marginRight: '0.42em', marginBottom: '0.22em' },
+  view: { background: '#2e7d32', color: '#fff' },
+  pay: { background: '#2979ff', color: '#fff' },
+  cancel: { background: '#b30527', color: '#fff' }
 };
 
-function getDayDiff(from, to) {
-  const start = new Date(from);
-  const end = new Date(to);
+function getDayDiff(startDate, endDate) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
   const ms = end - start;
   return Math.max(1, Math.round(ms / (1000 * 60 * 60 * 24)) + 1);
 }
@@ -41,70 +46,114 @@ function formatDateTime(dateStr) {
   return new Date(dateStr).toLocaleString();
 }
 
-// HARDCODED BOOKINGS DATA (swap to API/DB fetch later)
-const initialBookings = [
-  {
-    id: 1,
-    carName: "Swift LXI",
-    variant: "Petrol",
-    pricePerDay: 1899,
-    fromDate: "2025-07-23",
-    toDate: "2025-07-25",
-    bookingDate: "2025-07-20T09:33:00.000Z",
-    status: "Pending",
-    paymentStatus: "",
-  },
-  {
-    id: 2,
-    carName: "Hyundai i20",
-    variant: "Petrol",
-    pricePerDay: 2200,
-    fromDate: "2025-07-10",
-    toDate: "2025-07-11",
-    bookingDate: "2025-07-05T14:01:00.000Z",
-    status: "Approved",
-    paymentStatus: "Success",
-  },
-  {
-    id: 3,
-    carName: "Honda Amaze",
-    variant: "Petrol",
-    pricePerDay: 2100,
-    fromDate: "2025-07-06",
-    toDate: "2025-07-08",
-    bookingDate: "2025-07-04T19:03:00.000Z",
-    status: "Cancelled",
-    paymentStatus: "Failed"
-  },
-  // Add more bookings as needed
-];
-
 export default function MyBookingsPage() {
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
-  // Swap this state to fetched API data for backend integration
-  const [bookings, setBookings] = useState(initialBookings);
 
-  const handleCancel = (booking) => {
-    setBookings((prev) =>
-      prev.map(b =>
-        b.id === booking.id ? { ...b, status: "Cancelled" } : b
-      )
-    );
-    toast.error(`Booking #${booking.id} cancelled!`);
+  // Get token, extract userId
+  const token = sessionStorage.getItem('token');
+  let currentUserId = null;
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      currentUserId = decoded.id || decoded.userId;
+      const now = Date.now() / 1000;
+      if (decoded.exp && decoded.exp < now) {
+        sessionStorage.removeItem('token');
+        navigate('/login');
+        return null;
+      }
+    } catch (e) {
+      sessionStorage.removeItem('token');
+      navigate('/login');
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    if (!token || !currentUserId) {
+      navigate('/login');
+      return;
+    }
+    setLoading(true);
+    setErrorMsg('');
+    axios.get(`${API_BASE}/customer/booking?userId=${currentUserId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => {
+        setBookings(Array.isArray(res.data) ? res.data : res.data.bookings || []);
+        setLoading(false);
+      })
+      .catch(err => {
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          sessionStorage.removeItem('token');
+          navigate('/login');
+        } else {
+          setErrorMsg(err.response?.data?.message || 'Error fetching bookings');
+        }
+        setLoading(false);
+      });
+    // eslint-disable-next-line
+  }, [token, currentUserId, navigate]);
+
+  // Cancel booking: userId as param
+  const handleCancel = async (booking) => {
+    if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+    try {
+      await axios.put(
+        `${API_BASE}/customer/booking/${booking.bookingId}/cancel?userId=${currentUserId}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setBookings(prev =>
+        prev.map(b =>
+          b.bookingId === booking.bookingId ? { ...b, bookingStatus: 'CANCELLED' } : b
+        )
+      );
+      toast.success(`Booking #${booking.bookingId} cancelled!`);
+    } catch (err) {
+      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+        sessionStorage.removeItem('token');
+        navigate('/login');
+      } else {
+        toast.error(err.response?.data?.message || 'Failed to cancel booking!');
+      }
+    }
   };
 
   const handlePay = (booking) => {
-    navigate(`/customer/payment/${booking.id}`, {
+    const totalDays = getDayDiff(booking.startDate, booking.endDate);
+    const totalAmount = (booking.pricePerDay || 0) * totalDays;
+    navigate(`/customer/payment/${booking.bookingId}`, {
       state: {
-        bookingId: booking.id,
-        amount: booking.pricePerDay * getDayDiff(booking.fromDate, booking.toDate)
+        bookingId: booking.bookingId,
+        carName: booking.carName,
+        variant: booking.variant,
+        pricePerDay: booking.pricePerDay,
+        startDate: booking.startDate,
+        endDate: booking.endDate,
+        totalDays: totalDays,
+        amount: totalAmount,
+        userId: currentUserId
       }
     });
   };
 
+  // KEY IMPROVEMENT: Pass userId via location.state, not query param!
   const handleView = (booking) => {
-    toast.info(`Opening details for booking #${booking.id}`);
-    navigate(`/customer/booking-details/${booking.id}`);
+    toast.info(`Opening details for booking #${booking.bookingId}`);
+    navigate(`/customer/booking-details/${booking.bookingId}`, {
+      state: { userId: currentUserId }
+    });
+  };
+
+  const statusStyleMap = {
+    PENDING: badgeStyles.pending,
+    APPROVED: badgeStyles.approved,
+    CANCELLED: badgeStyles.cancelled,
+    CONFIRMED: badgeStyles.confirmed,
   };
 
   return (
@@ -126,6 +175,8 @@ export default function MyBookingsPage() {
         >
           All Bookings
         </h2>
+        {loading && <div>Loading bookings...</div>}
+        {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
         <div className="table-responsive">
           <table className="table align-middle mb-0" style={{ fontSize: '1rem', background: '#fff', borderCollapse: 'collapse' }}>
             <thead>
@@ -135,36 +186,29 @@ export default function MyBookingsPage() {
                 <th style={headerCellStyle}>Total Days</th>
                 <th style={headerCellStyle}>Price</th>
                 <th style={headerCellStyle}>Booking Date & Time</th>
-                <th style={headerCellStyle}>From Date</th>
-                <th style={headerCellStyle}>To Date</th>
+                <th style={headerCellStyle}>Start Date</th>
+                <th style={headerCellStyle}>End Date</th>
                 <th style={headerCellStyle}>Status</th>
                 <th style={headerCellStyle}>Action</th>
               </tr>
             </thead>
             <tbody>
-              {bookings.length === 0 ? (
+              {(!loading && bookings.length === 0) ? (
                 <tr>
                   <td colSpan={9} style={{ textAlign: "center" }}>No Bookings Yet.</td>
                 </tr>
               ) : (
                 bookings.map(b => {
-                  const totalDays = getDayDiff(b.fromDate, b.toDate);
-                  const totalPrice = totalDays * b.pricePerDay;
+                  const totalDays = getDayDiff(b.startDate, b.endDate);
+                  const totalPrice = totalDays * (b.pricePerDay || 0);
 
-                  // Status style
-                  let statusStyle;
-                  switch (b.status?.toLowerCase()) {
-                    case "pending":   statusStyle = badgeStyles.pending; break;
-                    case "cancelled": statusStyle = badgeStyles.cancelled; break;
-                    case "approved":  statusStyle = badgeStyles.approved; break;
-                    case "confirm":   statusStyle = badgeStyles.confirm; break;
-                    default:          statusStyle = badgeStyles.default;
-                  }
+                  const statusUpper = typeof b.bookingStatus === 'string'
+                    ? b.bookingStatus.toUpperCase()
+                    : '';
+                  const statusStyle = statusStyleMap[statusUpper] || badgeStyles.default;
 
-                  // Actions for each status
                   const actionButtons = [];
-                  const statusLower = b.status?.toLowerCase();
-                  if (statusLower === "pending") {
+                  if (statusUpper === "PENDING") {
                     actionButtons.push(
                       <button
                         key="cancel"
@@ -181,7 +225,7 @@ export default function MyBookingsPage() {
                         onClick={() => handleView(b)}
                       >View</button>
                     );
-                  } else if (statusLower === "approved") {
+                  } else if (statusUpper === "APPROVED") {
                     actionButtons.push(
                       <button
                         key="pay"
@@ -199,7 +243,6 @@ export default function MyBookingsPage() {
                       >View</button>
                     );
                   } else {
-                    // For all other statuses, View always enabled
                     actionButtons.push(
                       <button
                         key="view"
@@ -211,17 +254,17 @@ export default function MyBookingsPage() {
                   }
 
                   return (
-                    <tr key={b.id} style={{ borderBottom: '1px solid #e5e9f4' }}>
+                    <tr key={b.bookingId} style={{ borderBottom: '1px solid #e5e9f4' }}>
                       <td>{b.carName}</td>
                       <td>{b.variant}</td>
                       <td>{totalDays}</td>
                       <td>₹{totalPrice}</td>
                       <td>{formatDateTime(b.bookingDate)}</td>
-                      <td>{formatDate(b.fromDate)}</td>
-                      <td>{formatDate(b.toDate)}</td>
+                      <td>{formatDate(b.startDate)}</td>
+                      <td>{formatDate(b.endDate)}</td>
                       <td>
                         <span style={statusStyle}>
-                          {(b.status?.charAt(0).toUpperCase() || '') + (b.status?.slice(1).toLowerCase() || '')}
+                          {(statusUpper.charAt(0) || '') + (statusUpper.slice(1).toLowerCase() || '')}
                         </span>
                       </td>
                       <td>{actionButtons}</td>
@@ -236,4 +279,3 @@ export default function MyBookingsPage() {
     </div>
   );
 }
-
