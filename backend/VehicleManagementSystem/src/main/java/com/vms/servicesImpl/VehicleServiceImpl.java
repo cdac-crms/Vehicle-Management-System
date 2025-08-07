@@ -16,11 +16,14 @@ import com.vms.custom_exceptions.ApiException;
 import com.vms.custom_exceptions.ResourceNotFoundException;
 import com.vms.dao.VariantDao;
 import com.vms.dao.VehicleDao;
+import com.vms.dto.request.VehicleDashboardDto;
+import com.vms.dto.request.VehicleDetailsDto;
 import com.vms.dto.request.VehicleRequestDto;
 import com.vms.dto.response.ApiResponse;
 import com.vms.dto.response.VehicleResponseDto;
 import com.vms.entities.Variant;
 import com.vms.entities.Vehicle;
+import com.vms.entities.enums.AvailabilityStatus;
 import com.vms.services.VehicleService;
 
 import jakarta.transaction.Transactional;
@@ -38,7 +41,55 @@ public class VehicleServiceImpl  implements VehicleService{
     private final Cloudinary cloudinary;
 
 	
+    @Override
+    public List<VehicleDashboardDto> findAllAvailableVehicles() {
+        return vehicleDao.findByAvailabilityStatus(AvailabilityStatus.AVAILABLE)
+                .stream()
+                .map(this::toDashboardDto)
+                .toList();
+    }
+    
+    @Override
+    public List<VehicleDashboardDto> searchVehicles(String search) {
+        return vehicleDao.searchAvailableVehicles(search.toLowerCase())
+                .stream()
+                .map(this::toDashboardDto)
+                .toList();
+    }
+    
+    @Override
+    public VehicleDetailsDto findVehicleDetails(Long vehicleId) {
+        Vehicle vehicle = vehicleDao.findById(vehicleId)
+                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+        VehicleDetailsDto dto = modelMapper.map(vehicle, VehicleDetailsDto.class);
+        dto.setName(vehicle.getVariant().getName());
+        dto.setCompany(vehicle.getVariant().getCompany().getName());
+        dto.setFuel(vehicle.getVariant().getFuelType().toString());
+        dto.setCapacity(vehicle.getVariant().getSeatingCapacity());
+        // Set rating (implement average rating logic)
+        dto.setRating(0.0);
+        // Image is now a Cloudinary URL
+        dto.setImage(vehicle.getImage());
+        return dto;
+    }
 
+ // Helper to fill in card details
+    private VehicleDashboardDto toDashboardDto(Vehicle v) {
+        VehicleDashboardDto dto = modelMapper.map(v, VehicleDashboardDto.class);
+        dto.setName(v.getVariant().getName());
+        dto.setCompany(v.getVariant().getCompany().getName());
+        dto.setFuel(v.getVariant().getFuelType().toString());
+        dto.setCapacity(v.getVariant().getSeatingCapacity());
+        // Set rating (implement average rating logic)
+        dto.setRating(0.0);
+        // Image is now a Cloudinary URL
+        dto.setImage(v.getImage());
+        return dto;
+    }
+    
+    
+    
+    
     @Override
     public ApiResponse addVehicle(VehicleRequestDto dto, MultipartFile imageFile) {
 

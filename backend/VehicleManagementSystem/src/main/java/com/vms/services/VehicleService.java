@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.vms.dto.request.VehicleDashboardDto;
+import com.vms.dto.request.VehicleDetailsDto;
 import com.vms.dto.request.VehicleRequestDto;
 import com.vms.dto.response.ApiResponse;
 import com.vms.dto.response.VehicleResponseDto;
@@ -17,5 +19,10 @@ public interface VehicleService {
 	VehicleResponseDto getVehicleById(Long vehicleId);
 	ApiResponse updateVehicle(Long vehicleId, VehicleRequestDto dto, MultipartFile imageFile);
 	ApiResponse deleteVehicle(Long vehicleId);
+	
+	
+	List<VehicleDashboardDto> findAllAvailableVehicles();
+	List<VehicleDashboardDto> searchVehicles(String search);
+	VehicleDetailsDto findVehicleDetails(Long vehicleId);
 
 }
