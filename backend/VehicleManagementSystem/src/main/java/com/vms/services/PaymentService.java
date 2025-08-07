@@ -5,4 +5,5 @@ import com.vms.dto.response.GetAllPaymentsDto;
 
 public interface PaymentService {
     List<GetAllPaymentsDto> getAllPayments();
+    
 }
