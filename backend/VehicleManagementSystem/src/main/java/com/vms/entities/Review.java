@@ -17,7 +17,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "reviews")
+@Table(name = "review")
 @AttributeOverride(name = "id", column = @Column(name = "review_id"))
 
 public class Review extends BaseEntity{
@@ -27,14 +27,10 @@ public class Review extends BaseEntity{
 
 	    @Column(name = "message", columnDefinition = "TEXT")
 	    private String message;
-//	    
-//	    @ManyToOne(fetch = FetchType.LAZY)
-//	    @JoinColumn(name = "vehicle_id")
-//	    private Vehicle vehicle;
-//
-//	   //  in vehicle table
-//	    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
-//	    private List<Review> reviews = new ArrayList<>();
+	    
+	    @ManyToOne(fetch = FetchType.LAZY)
+	    @JoinColumn(name = "vehicle_id")
+	    private Vehicle vehicle;
 
 	     @ManyToOne(fetch = FetchType.LAZY, optional = false)
 		 @JoinColumn(name = "user_id", nullable = false)

@@ -1,58 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAllVehicles } from "../../../services/VehicleService";
 
 const ViewAllVehicles = () => {
- 
   const [vehicles, setVehicles] = useState([]);
-  useEffect(()=>{
-  setVehicles ([
-    {
-      vehicle_id: 1,
-      vehicle_image: "AAAAAAAAAAAAAAAAA",
-      variant_id: 101,
-      registration_number: "RJ14XX0001",
-      color: "Black",
-      availability_status: "AVAILABLE",
-      price_per_day: 1200.5,
-      mileage: 18,
-    },
-    {
-      vehicle_id: 2,
-      vehicle_image:"AAAAAAAAAAAAAAAAA",
-      variant_id: 102,
-      registration_number: "RJ14XX0002",
-      color: "White",
-      availability_status: "BOOKED",
-      price_per_day: 1500.0,
-      mileage: 22,
-    }
-  ]);
-}, []);
-  
   const navigate = useNavigate();
 
-  const handleUpdate = (vehicle) => {
-    navigate(`/admin/update-vehicle/${vehicle.vehicle_id }`);
+  useEffect(() => {
+    fetchVehicles();
+  }, []);
+
+  const fetchVehicles = async () => {
+    try {
+      const res = await getAllVehicles();
+      console.log("Fetched vehicles:", res);
+      setVehicles(Array.isArray(res) ? res : []);
+    } catch (err) {
+      console.error("Error fetching vehicles:", err);
+      setVehicles([]);
+    }
   };
 
-  const handleDelete = (vehicle) => {
-    alert(`Vehicle ID ${vehicle.vehicle_id} deleted (mock).`);
-  };
-
-  const handleViewDetails = (vehicle) => {
-    navigate(`/admin/view-vehicle/${vehicle.vehicle_id }`, { state: vehicle });
-  };
+  const handleUpdate = (id) => navigate(`/admin/update-vehicle/${id}`);
+  const handleDelete = (id) => alert(`Mock delete vehicle ID: ${id}`);
+  const handleViewDetails = (vehicle) =>
+    navigate(`/admin/view-vehicle/${vehicle.id}`, { state: vehicle });
 
   return (
     <div className="container mt-5">
       <h2 className="text-center mb-4">All Vehicles</h2>
       {vehicles.length > 0 ? (
-      <div className="table-responsive">
         <table className="table table-bordered table-hover align-middle text-center">
           <thead className="table-dark">
             <tr>
               <th>Sr No</th>
-              <th>Vehicle Image</th>
+              <th>Image</th>
               <th>Variant Name</th>
               <th>Registration No.</th>
               <th>Color</th>
@@ -63,44 +45,60 @@ const ViewAllVehicles = () => {
             </tr>
           </thead>
           <tbody>
-            {vehicles.map((vehicle) => (
-              <tr key={vehicle.vehicle_id}>
-                <td>{vehicle.vehicle_id}</td>
-                <td>{vehicle.vehicle_image}</td>
-                <td>{vehicle.variant_id}</td>
-                <td>{vehicle.registration_number}</td>
-                <td>{vehicle.color}</td>
-                <td>{vehicle.availability_status}</td>
-                <td>₹{vehicle.price_per_day}</td>
-                <td>{vehicle.mileage}</td>
+            {vehicles.map((vehicle, idx) => (
+              <tr key={vehicle.id}>
+                <td>{idx + 1}</td>
                 <td>
-                  <button
-                    className="btn btn-sm btn-primary me-2"
-                    onClick={() => handleUpdate(vehicle.vehicle_id)}
-                    title="Update Vehicle"
-                  >
-                    Update
-                  </button>
-                  <button
-                    className="btn btn-sm btn-danger me-2"
-                    onClick={() => handleDelete(vehicle.vehicle_id)}
-                    title="Delete Vehicle"
-                  >
-                    Delete
-                  </button>
-                  <button
-                    className="btn btn-sm btn-info"
-                    onClick={() => handleViewDetails(vehicle)}
-                    title="View Vehicles"
-                  >
-                    View
-                  </button>
+                  {vehicle.image ? (
+                    <img
+                      src={vehicle.image}
+                      alt="Vehicle"
+                      width="100"
+                      height="70"
+                      style={{ objectFit: "cover" }}
+                    />
+                  ) : (
+                    "No Image"
+                  )}
+                </td>
+                <td>{vehicle.variantName || "N/A"}</td>
+                <td>{vehicle.registrationNumber || "N/A"}</td>
+                <td>{vehicle.color || "N/A"}</td>
+                <td>{vehicle.availabilityStatus || "N/A"}</td>
+                <td>₹{vehicle.pricePerDay || "N/A"}</td>
+                <td>{vehicle.mileage || "N/A"}</td>
+                <td>
+               <button
+  style={{ backgroundColor: "#102649", color: "white" }} // Deep Blue
+  className="btn btn-sm me-2"
+  onClick={() => handleUpdate(vehicle.id)}
+  title="Update Vehicle"
+>
+  Update
+</button>
+<button
+  style={{ backgroundColor: "#e63946", color: "white" }} // Bright Red
+  className="btn btn-sm me-2"
+  onClick={() => handleDelete(vehicle.id)}
+  title="Delete Vehicle"
+>
+  Delete
+</button>
+<button
+  style={{ backgroundColor: "#6c757d", color: "white" }} // Cool Gray
+  className="btn btn-sm"
+  onClick={() => handleViewDetails(vehicle)}
+  title="View Vehicle"
+>
+  View
+</button>
+
+
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
       ) : (
         <p className="text-center text-muted">No vehicles available.</p>
       )}

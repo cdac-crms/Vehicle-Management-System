@@ -9,19 +9,25 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.vms.entities.enums.PaymentMethod;
+import com.vms.entities.enums.PaymentStatus;
+
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "payments")
+@Table(name = "payment")
 @AttributeOverride(name = "id", column = @Column(name = "payment_id"))
 public class Payment extends BaseEntity{
 
 // In Booking Class Add this below:
 //	@OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
 //	private Payment payment;
-
+	
+	@OneToOne
+	@JoinColumn(name = "booking_id")
+	private Booking booking;
 
     @Column(name = "amount", precision = 10, scale = 2)
     private BigDecimal amount;
@@ -48,18 +54,6 @@ public class Payment extends BaseEntity{
     @Column(name = "payment_status", nullable = false)
     private PaymentStatus paymentStatus = PaymentStatus.PENDING; // PAID, FAILED, PENDING
     
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "booking_id", nullable = false)
-//    private Booking booking;
 
-    
-
-    public enum PaymentMethod {
-        CARD, UPI, NETBANKING, CASH, RAZORPAY
-    }
-
-    public enum PaymentStatus {
-        PAID, FAILED, PENDING
-    }
 }
 

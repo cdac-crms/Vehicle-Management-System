@@ -1,6 +1,7 @@
 package com.vms.entities;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -25,5 +26,5 @@ public class BaseEntity {
 		
 		@CreationTimestamp
 		@Column(name="created_on")
-		private LocalDate createdOn;
+		private LocalDateTime createdOn;
 }

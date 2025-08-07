@@ -1,22 +1,10 @@
 package com.vms.entities;
 
+import com.vms.entities.enums.BookingStatus;
+import jakarta.persistence.*;
+import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
-import com.vms.entities.enums.BookingStatus;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "booking")
@@ -25,30 +13,35 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Booking extends BaseEntity {
-	  @ManyToOne(fetch = FetchType.LAZY)
-	    @JoinColumn(name = "user_id", nullable = false)
-	    private User user;
 
-	    @ManyToOne(fetch = FetchType.LAZY)
-	    @JoinColumn(name = "vehicle_id", nullable = false)
-	    private Vehicle vehicle;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-	    @Column(name = "booking_date", nullable = false)
-	    private LocalDate bookingDate;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vehicle_id", nullable = false)
+    private Vehicle vehicle;
 
-	    @Column(name = "start_date", nullable = false)
-	    private LocalDate startDate;
+    @Column(name = "booking_date", nullable = false)
+    private LocalDate bookingDate;
 
-	    @Column(name = "end_date", nullable = false)
-	    private LocalDate endDate;
+    @Column(name = "start_date", nullable = false)
+    private LocalDate startDate;
 
-	    @Enumerated(EnumType.STRING)
-	    @Column(name = "booking_status", length = 20)
-	    private BookingStatus bookingStatus = BookingStatus.PENDING;
+    @Column(name = "end_date", nullable = false)
+    private LocalDate endDate;
 
-	    @Column(name = "total_amount", precision = 10, scale = 2)
-	    private BigDecimal totalAmount;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "booking_status", length = 20)
+    private BookingStatus bookingStatus = BookingStatus.PENDING;
 
-	    private String x1;
-	    private String x2;
+    @Column(name = "total_amount", precision = 10, scale = 2)
+    private BigDecimal totalAmount;
+
+    private String x1;
+    private String x2;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "payment_id") // foreign key column in booking table
+    private Payment payment;
 }

@@ -50,7 +50,7 @@ function App() {
         <Route path="/admin/view-customers" element={<ViewAllCustomers />} />
         <Route path="/admin/bookings" element={<ViewCustomerBooking/>} />
         <Route path="/admin/view-booking/:id" element={<ViewBookingDetails />} />
-        <Route path="/admin/update-vehicle/:id" element={<UpdateVehicleForm />} />
+        <Route path="/admin/update-vehicle/:vehicleId" element={<UpdateVehicleForm />} />
         <Route path="/admin/view-vehicle/:id" element={<VehicleDetails />} />
         <Route path="/admin/customer/:id" element={<ViewCustomerProfile />} />
         <Route path="/admin/view-payments" element={<PaymentSummary />} />

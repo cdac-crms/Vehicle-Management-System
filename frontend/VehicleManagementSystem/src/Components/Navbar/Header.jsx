@@ -74,7 +74,7 @@ const Header = () => {
             )}
 
             {/* Customer links */}
-            {token && role === 'customer' && (
+            {token && role === 'CUSTOMER' && (
               <>
                 <li className="nav-item">
                   <Link
@@ -145,7 +145,7 @@ const Header = () => {
             )}
 
             {/* Admin links */}
-          {token && role === 'admin' && (
+          {token && role === 'ADMIN' && (
               <>
                 <li className="nav-item">
                   <Link

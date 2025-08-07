@@ -1,17 +1,18 @@
 package com.vms.entities;
 
-
 import com.vms.entities.enums.FuelType;
-
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.List;
 
 @Entity
-@Table(name = "car_variants")
+@Table(name = "variant")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
 public class Variant extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -31,9 +32,9 @@ public class Variant extends BaseEntity {
     @Column(name = "fuel_type", length = 20)
     private FuelType fuelType;
 
-    @Column(name = "x1", length = 100)
     private String x1;
-
-    @Column(name = "x2", length = 100)
     private String x2;
+
+    @OneToMany(mappedBy = "variant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Vehicle> vehicles;
 }

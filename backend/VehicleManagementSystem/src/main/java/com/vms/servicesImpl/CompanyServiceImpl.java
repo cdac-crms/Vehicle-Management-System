@@ -1,0 +1,63 @@
+package com.vms.servicesImpl;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Service;
+
+import com.vms.custom_exceptions.ApiException;
+import com.vms.custom_exceptions.ResourceNotFoundException;
+import com.vms.dao.CompanyDao;
+import com.vms.dto.request.AddCompanyDto;
+import com.vms.dto.response.GetAllCompanyDto;
+import com.vms.dto.response.GetOneCompanyDto;
+import com.vms.entities.Company;
+import com.vms.services.CompanyService;
+
+import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
+
+@Service
+@Transactional
+@AllArgsConstructor
+public class CompanyServiceImpl  implements CompanyService{
+
+	private final CompanyDao companyDao;
+	private final ModelMapper modelMapper;
+	
+	
+	@Override
+	public String addCompany(AddCompanyDto addCompanyDto) {
+		if(companyDao.existsByName(addCompanyDto.getName()))
+		{
+			throw new ApiException("Company Already Exists.");
+		}
+		
+		Company company = modelMapper.map(addCompanyDto, Company.class);
+        company.setCreatedAt(LocalDateTime.now()); 
+		companyDao.save(company);
+		
+		return "Company Added Succesfully";
+	}
+	
+	
+	@Override
+	public List<GetAllCompanyDto> getAllCompanies() {
+	    List<Company> companies = companyDao.findAll();
+
+	    return companies.stream()
+	            .map(company -> modelMapper.map(company, GetAllCompanyDto.class))
+	            .toList();
+	}
+	
+	@Override
+	public GetOneCompanyDto getCompanyById(Long companyId) {
+		Company company = companyDao.findById(companyId)
+				.orElseThrow(() -> new ResourceNotFoundException("CompanyID"+  companyId));
+		
+		return modelMapper.map(company, GetOneCompanyDto.class);
+	}
+	
+
+}

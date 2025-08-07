@@ -68,7 +68,7 @@ const ViewBookingDetails = () => {
             <p>
               <strong>Total Fare:</strong> ₹{booking.totalAmount}
             </p>
-            <p>
+            {/* <p>
               <strong>Payment Status:</strong>
               <span
                 className={`badge ms-2 ${
@@ -77,7 +77,7 @@ const ViewBookingDetails = () => {
               >
                 {booking.paymentStatus}
               </span>
-            </p>
+            </p> */}
           </div>
         </div>
       </div>
@@ -104,6 +104,9 @@ const ViewBookingDetails = () => {
             <p>
               <strong>DL Number:</strong> {booking.dlNumber}
             </p>
+            <p>
+              <strong>Expiry Date::</strong> {booking.expiryDate}
+            </p>
             <div className="mt-2">
               <img
                 src={
@@ -120,13 +123,13 @@ const ViewBookingDetails = () => {
         <div className="col-md-4 mb-3">
           <div className="card h-100 shadow-sm p-3 d-flex flex-column justify-content-between">
             <div>
-              <h5 className="mb-3">Transaction</h5>
+              <h5 className="mb-3">Booking Status</h5>
               <p>
                 <strong>Status:</strong> {booking.paymentStatus}
               </p>
-              <p>
+              {/* <p>
                 <strong>Transaction Time:</strong> {booking.transactionTime}
-              </p>
+              </p> */}
             </div>
 
             <hr />
