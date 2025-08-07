@@ -52,8 +52,8 @@ export default function MyBookingsPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
 
-  // Get token, extract userId
-  const token = sessionStorage.getItem('token');
+  // Get token, extract userId (now from localStorage)
+  const token = localStorage.getItem('token');
   let currentUserId = null;
   if (token) {
     try {
@@ -61,12 +61,12 @@ export default function MyBookingsPage() {
       currentUserId = decoded.id || decoded.userId;
       const now = Date.now() / 1000;
       if (decoded.exp && decoded.exp < now) {
-        sessionStorage.removeItem('token');
+        localStorage.removeItem('token');
         navigate('/login');
         return null;
       }
     } catch (e) {
-      sessionStorage.removeItem('token');
+      localStorage.removeItem('token');
       navigate('/login');
       return null;
     }
@@ -88,7 +88,7 @@ export default function MyBookingsPage() {
       })
       .catch(err => {
         if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-          sessionStorage.removeItem('token');
+          localStorage.removeItem('token');
           navigate('/login');
         } else {
           setErrorMsg(err.response?.data?.message || 'Error fetching bookings');
@@ -115,7 +115,7 @@ export default function MyBookingsPage() {
       toast.success(`Booking #${booking.bookingId} cancelled!`);
     } catch (err) {
       if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-        sessionStorage.removeItem('token');
+        localStorage.removeItem('token');
         navigate('/login');
       } else {
         toast.error(err.response?.data?.message || 'Failed to cancel booking!');
@@ -141,7 +141,7 @@ export default function MyBookingsPage() {
     });
   };
 
-  // KEY IMPROVEMENT: Pass userId via location.state, not query param!
+  // Pass userId via location.state
   const handleView = (booking) => {
     toast.info(`Opening details for booking #${booking.bookingId}`);
     navigate(`/customer/booking-details/${booking.bookingId}`, {
