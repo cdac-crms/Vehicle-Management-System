@@ -59,6 +59,16 @@ export default function BookingDetailsPage() {
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
 
+  // Helper function to clear auth data and redirect
+  const clearAuthAndRedirect = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
+    localStorage.removeItem("email");
+    localStorage.removeItem("name");
+    navigate("/login");
+  };
+
   useEffect(() => {
     if (!id || !userId) {
       setError("Missing booking or user information. Please login again.");
@@ -80,8 +90,8 @@ export default function BookingDetailsPage() {
       .then(res => {
         setBooking(res.data);
         if (res.data.vehicleId) {
-          // Look up vehicle for live info (name, variant, image)
-          return axios.get(`${API_BASE_URL}/vehicles/${res.data.vehicleId}`, axiosAuthConfig)
+          // Updated route: /vehicle/{id} instead of /vehicles/{id}
+          return axios.get(`${API_BASE_URL}/vehicle/${res.data.vehicleId}`, axiosAuthConfig)
             .then(vehRes => setVehicle(vehRes.data))
             .catch(() => setVehicle(null));
         } else {
@@ -90,17 +100,23 @@ export default function BookingDetailsPage() {
         return null;
       })
       .then(() =>
-        axios.get(`${API_BASE_URL}/customer/payments/booking/${id}?userId=${userId}`, axiosAuthConfig)
+        // Updated route: /payment/booking/{bookingId} instead of /customer/payments/booking/{id}
+        axios.get(`${API_BASE_URL}/payment/booking/${id}?userId=${userId}`, axiosAuthConfig)
           .then(res => setPayment(res.data))
           .catch(() => setPayment(null))
       )
       .finally(() => setLoading(false))
       .catch(err => {
-        setLoading(false);
-        setError(
-          err.response?.data?.message ||
-          "Error loading booking, vehicle, or payment details."
-        );
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          setError("Session expired. Please login again.");
+          clearAuthAndRedirect();
+        } else {
+          setLoading(false);
+          setError(
+            err.response?.data?.message ||
+            "Error loading booking, vehicle, or payment details."
+          );
+        }
       });
   }, [id, userId, token]);
 
@@ -156,6 +172,7 @@ export default function BookingDetailsPage() {
 
     if (!token || !userId) {
       setReviewErrMsg("Authentication required. Please login to submit a review.");
+      clearAuthAndRedirect();
       return;
     }
     if (stars === 0) {
@@ -173,7 +190,8 @@ export default function BookingDetailsPage() {
 
     axios
       .post(
-        `${API_BASE_URL}/customer/review`,
+        // Updated route: /reviews instead of /customer/review
+        `${API_BASE_URL}/reviews`,
         {
           vehicleId,
           userId,
@@ -189,9 +207,14 @@ export default function BookingDetailsPage() {
         setReviewErrMsg("");
       })
       .catch(err => {
-        setReviewErrMsg(
-          err.response?.data?.message || "Failed to submit review!"
-        );
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          setReviewErrMsg("Session expired. Please login again.");
+          clearAuthAndRedirect();
+        } else {
+          setReviewErrMsg(
+            err.response?.data?.message || "Failed to submit review!"
+          );
+        }
       })
       .finally(() => setPostingReview(false));
   };
@@ -224,6 +247,10 @@ export default function BookingDetailsPage() {
                       borderRadius: 14,
                       boxShadow: "0 2px 10px rgba(24,44,123,0.11)",
                       marginBottom: 10
+                    }}
+                    onError={e => { 
+                      e.target.onerror = null; 
+                      e.target.src = DEFAULT_CAR_IMG; 
                     }}
                   />
                 </div>
@@ -269,6 +296,7 @@ export default function BookingDetailsPage() {
           <div className="col-md-5">
             <div className="card rounded-4 shadow border-0 h-100 px-0 px-md-2 py-3">
               <h5 className="mb-3 fw-bold text-center" style={{ color: "#15418c" }}>
+                <i className="bi bi-credit-card me-2"></i>
                 Payment Details
               </h5>
               {payment ? (
@@ -291,7 +319,10 @@ export default function BookingDetailsPage() {
                   <div className="col-6">{payment.transactionId || "-"}</div>
                 </div>
               ) : (
-                <div className="text-muted text-center py-3">No payment record found.</div>
+                <div className="text-muted text-center py-3">
+                  <i className="bi bi-info-circle" style={{ fontSize: "2rem", color: "#6c757d" }}></i>
+                  <div className="mt-2">No payment record found.</div>
+                </div>
               )}
             </div>
           </div>
@@ -301,7 +332,10 @@ export default function BookingDetailsPage() {
         <div className="row mb-4">
           <div className="col-lg-9 mx-auto">
             <div className="bg-white rounded-4 shadow-sm p-4">
-              <h4 className="mb-3 fw-bold text-primary">Add a Review</h4>
+              <h4 className="mb-3 fw-bold text-primary">
+                <i className="bi bi-star me-2"></i>
+                Add a Review
+              </h4>
               <form onSubmit={handleReviewSubmit}>
                 <div className="mb-3">
                   <label className="form-label fw-semibold">Rating</label>
@@ -344,6 +378,7 @@ export default function BookingDetailsPage() {
                 </div>
                 {reviewErrMsg && (
                   <div className="alert alert-danger" style={{ fontSize: "1.04rem", textAlign: "center" }}>
+                    <i className="bi bi-exclamation-circle me-2"></i>
                     {reviewErrMsg}
                   </div>
                 )}
@@ -352,15 +387,25 @@ export default function BookingDetailsPage() {
                     className="btn btn-primary fw-semibold"
                     type="submit"
                     disabled={postingReview}
+                    style={{ fontSize: "1.1rem", padding: "0.6rem" }}
                   >
-                    {postingReview ? "Submitting..." : "Submit Review"}
+                    {postingReview ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2"></span>
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-send me-2"></i>
+                        Submit Review
+                      </>
+                    )}
                   </button>
                 </div>
               </form>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

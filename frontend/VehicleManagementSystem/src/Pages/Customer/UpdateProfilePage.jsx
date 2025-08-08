@@ -8,7 +8,7 @@ const initialUser = {
   lastName: '',
   email: '',
   phone: '',
-  address: ''  // Now a single string
+  address: ''
 };
 
 const initialLicence = {
@@ -38,6 +38,7 @@ function MyProfilePage() {
   const [loadingLicence, setLoadingLicence] = useState(false);
   const [licenceError, setLicenceError] = useState('');
   const [hasLicense, setHasLicense] = useState(false);
+  const [licenseId, setLicenseId] = useState(null); // Store license ID for updates
 
   // Helper function to clear auth data and redirect
   const clearAuthAndRedirect = () => {
@@ -61,7 +62,8 @@ function MyProfilePage() {
       setLoadingUser(true);
       setUserError('');
       try {
-        const resp = await fetch(`${API_BASE}/customer/profile?userId=${userId}`, {
+        // Updated route: /users/myprofile/{userId} (matches backend)
+        const resp = await fetch(`${API_BASE}/users/myprofile/${userId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -89,7 +91,8 @@ function MyProfilePage() {
       setLoadingLicence(true);
       setLicenceError('');
       try {
-        const resp = await fetch(`${API_BASE}/customer/driving-license?userId=${userId}`, {
+        // Updated route: /customer/drivingLicense/user/{userId} (matches backend)
+        const resp = await fetch(`${API_BASE}/customer/drivingLicense/user/${userId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -102,14 +105,24 @@ function MyProfilePage() {
         
         if (resp.ok) {
           const data = await resp.json();
-          setLicence({ ...data, image: null });
-          setLicencePreview(data.license_image);
+          setLicence({ 
+            ...data, 
+            image: null,
+            license_number: data.licenseNumber, // Map backend field names
+            expiry_date: data.expiryDate,
+            license_image: data.licenseImage
+          });
+          setLicencePreview(data.licenseImage);
+          setLicenseId(data.licenseId); // Store license ID for updates
           setHasLicense(true);
-        } else {
+        } else if (resp.status === 404) {
           // No license found - this is OK
           setHasLicense(false);
           setLicence({ ...initialLicence, userId, image: null });
           setLicencePreview(null);
+          setLicenseId(null);
+        } else {
+          throw new Error('Failed to load license');
         }
       } catch (e) {
         setLicenceError('Failed to load license.');
@@ -144,16 +157,14 @@ function MyProfilePage() {
     setLoadingUser(true);
     setUserError('');
     try {
-      const resp = await fetch(`${API_BASE}/customer/profile`, {
+      // Updated route: /users/update-profile/{userId} (matches backend)
+      const resp = await fetch(`${API_BASE}/users/update-profile/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          ...user,
-          userId
-        })
+        body: JSON.stringify(user) // Don't include userId in body, it's in path
       });
 
       if (resp.status === 401 || resp.status === 403) {
@@ -204,23 +215,42 @@ function MyProfilePage() {
     setLicenceError('');
     try {
       const formData = new FormData();
-      formData.append('license_number', licence.license_number);
-      formData.append('expiry_date', licence.expiry_date);
+      
+      // Map frontend field names to backend expected names
+      formData.append('licenseNumber', licence.license_number);
+      formData.append('expiryDate', licence.expiry_date);
       formData.append('userId', userId);
-      if (licence.image) formData.append('file', licence.image);
+      if (licence.image) formData.append('imageFile', licence.image);
 
-      const method = hasLicense ? 'PUT' : 'POST';
-      const resp = await fetch(`${API_BASE}/customer/driving-license`, {
-        method,
-        headers: { 
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
+      let resp;
+      if (hasLicense && licenseId) {
+        // Update existing license: PUT /customer/drivingLicense/{licenseId}
+        resp = await fetch(`${API_BASE}/customer/drivingLicense/${licenseId}`, {
+          method: 'PUT',
+          headers: { 
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+      } else {
+        // Create new license: POST /customer/drivingLicense
+        resp = await fetch(`${API_BASE}/customer/drivingLicense`, {
+          method: 'POST',
+          headers: { 
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+      }
 
       if (resp.status === 401 || resp.status === 403) {
         setLicenceError('Session expired. Please login again.');
         clearAuthAndRedirect();
+        return;
+      }
+
+      if (resp.status === 409) { // Conflict - license already exists
+        setLicenceError('A license already exists for this user.');
         return;
       }
 
@@ -229,13 +259,14 @@ function MyProfilePage() {
       const result = await resp.json();
       setLicence({
         ...licence,
-        license_image: result.license_image,
-        license_number: result.license_number,
-        expiry_date: result.expiry_date,
+        license_image: result.licenseImage,
+        license_number: result.licenseNumber,
+        expiry_date: result.expiryDate,
         userId: result.userId,
         image: null
       });
-      setLicencePreview(result.license_image);
+      setLicencePreview(result.licenseImage);
+      setLicenseId(result.licenseId);
       setHasLicense(true);
       setEditingLicence(false);
 
@@ -244,7 +275,7 @@ function MyProfilePage() {
         setLicencePreview(URL.createObjectURL(licence.image));
       }
     } catch (e) {
-      setLicenceError('Failed to update license');
+      setLicenceError('Failed to update license: ' + e.message);
     }
     setLoadingLicence(false);
   };
@@ -402,7 +433,7 @@ function MyProfilePage() {
                 name="phone"
                 type="tel"
                 className="form-control"
-                value={user.phone}
+                value={user.contactNo}
                 onChange={handleUserChange}
                 disabled={!editingUser || loadingUser}
                 autoComplete="tel"

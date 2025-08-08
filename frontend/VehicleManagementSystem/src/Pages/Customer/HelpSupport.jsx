@@ -22,11 +22,21 @@ const HelpSupport = () => {
   const userEmail = localStorage.getItem("email");
   const userName = localStorage.getItem("name");
 
+  // Helper function to clear auth data and redirect
+  const clearAuthAndRedirect = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
+    localStorage.removeItem("email");
+    localStorage.removeItem("name");
+    navigate("/login");
+  };
+
   // Check authentication on component mount
   useEffect(() => {
     if (!token || !userId) {
       setError("You are not logged in. Please login to access support.");
-      navigate("/login");
+      clearAuthAndRedirect();
       return;
     }
 
@@ -36,7 +46,7 @@ const HelpSupport = () => {
       name: userName || "",
       email: userEmail || ""
     }));
-  }, [token, userId, userName, userEmail, navigate]);
+  }, [token, userId, userName, userEmail]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -47,7 +57,7 @@ const HelpSupport = () => {
     
     if (!token || !userId) {
       setError("Authentication required. Please login to submit support request.");
-      navigate("/login");
+      clearAuthAndRedirect();
       return;
     }
 
@@ -64,9 +74,9 @@ const HelpSupport = () => {
         message: form.message
       };
 
-      // Send to backend API
+      // Updated route: /customer/help-support (matches backend controller)
       await axios.post(
-        "http://localhost:8080/customer/support", 
+        "http://localhost:8080/customer/help-support", 
         supportRequest,
         {
           headers: {
@@ -87,13 +97,7 @@ const HelpSupport = () => {
     } catch (err) {
       if (err.response && (err.response.status === 401 || err.response.status === 403)) {
         setError("Session expired. Please login again.");
-        // Clear all auth-related localStorage items
-        localStorage.removeItem("token");
-        localStorage.removeItem("userId");
-        localStorage.removeItem("role");
-        localStorage.removeItem("email");
-        localStorage.removeItem("name");
-        navigate("/login");
+        clearAuthAndRedirect();
       } else {
         setError(
           err.response?.data?.message || 
@@ -110,6 +114,7 @@ const HelpSupport = () => {
     return (
       <div className="container py-5 text-center">
         <div className="alert alert-warning">
+          <i className="bi bi-exclamation-triangle-fill me-2"></i>
           Authentication required. Redirecting to login...
         </div>
       </div>
@@ -129,12 +134,14 @@ const HelpSupport = () => {
 
       {submitted && (
         <div className="alert alert-success" role="alert">
+          <i className="bi bi-check-circle me-2"></i>
           Thank you! Your support request has been submitted successfully.
         </div>
       )}
 
       {error && (
         <div className="alert alert-danger" role="alert">
+          <i className="bi bi-exclamation-circle me-2"></i>
           {error}
         </div>
       )}
@@ -213,7 +220,17 @@ const HelpSupport = () => {
             className="btn btn-primary fw-semibold"
             disabled={loading}
           >
-            {loading ? "Submitting..." : "Submit Request"}
+            {loading ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2"></span>
+                Submitting...
+              </>
+            ) : (
+              <>
+                <i className="bi bi-send me-2"></i>
+                Submit Request
+              </>
+            )}
           </button>
         </div>
       </form>

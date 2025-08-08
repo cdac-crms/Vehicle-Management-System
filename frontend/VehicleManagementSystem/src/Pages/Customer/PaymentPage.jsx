@@ -82,7 +82,8 @@ export default function PaymentPage() {
     setLoading(true);
     
     try {
-      const response = await fetch("http://localhost:8080/customer/payments", {
+      // Updated route: /payment (matches backend controller)
+      const response = await fetch("http://localhost:8080/payment", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
