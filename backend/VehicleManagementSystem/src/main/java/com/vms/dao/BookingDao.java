@@ -31,4 +31,5 @@ public interface BookingDao extends JpaRepository<Booking, Long>{
 		    @Param("statuses") List<BookingStatus> statuses
 		);
 	
+	
 }
