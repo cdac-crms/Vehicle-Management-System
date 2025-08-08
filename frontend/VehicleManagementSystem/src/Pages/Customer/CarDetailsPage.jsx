@@ -1,108 +1,160 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
-// Utility for today's date formatted as yyyy-mm-dd
+// Helper for today's date string
 function todayString() {
-  return new Date().toISOString().split('T')[0];
+  return new Date().toISOString().split("T")[0];
 }
 
 function CarDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // Later, fetch car details by id from backend here:
-  const car = {
-    image: 'https://images.unsplash.com/photo-1511918984145-48de785d4c4e?auto=format&fit=crop&w=600&q=80',
-    name: 'Swift LXI',
-    price: 1899,
-    fuel: 'Petrol',
-    capacity: '5 Seats',
-    mileage: '18 km/lt'
-  };
+  // Car details
+  const [car, setCar] = useState(null);
+  const [loadingCar, setLoadingCar] = useState(true);
 
-  // State for booking
-  const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
-  const [error, setError] = useState('');
+  // Booking state
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [error, setError] = useState("");
 
-  // For future: store unavailable date intervals, e.g. [{start: '2025-01-01', end: '2025-01-03'}, ...]
+  // Unavailable date ranges from backend
   const [unavailableRanges, setUnavailableRanges] = useState([]);
+  const [overlappingRanges, setOverlappingRanges] = useState([]);
 
-  // ===== FUTURE: Fetch unavailable (already booked) date ranges for this car =====
-  useEffect(() => {
-    // Example API endpoint: `/api/vehicles/${id}/booked-ranges`
-    // Uncomment and use real endpoint once backend is ready:
-    /*
-    fetch(`/api/vehicles/${id}/booked-ranges`)
-      .then(res => res.json())
-      .then(ranges => setUnavailableRanges(ranges))
-      .catch(err => console.error("Could not fetch booked dates", err));
-    */
-  }, [id]);
+  // Get JWT token and decode user info from it (now from localStorage)
+  const token = localStorage.getItem("token");
+  let currentUserId = null;
+  let currentUserEmail = null;
 
-  // Helper to check if a date is in an unavailable range (for custom disabling, if using library)
-  const isDateUnavailable = (dateStr) => {
-    const date = new Date(dateStr);
-    return unavailableRanges.some((range) =>
-      date >= new Date(range.start) && date <= new Date(range.end)
-    );
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      currentUserId = decoded.userId;
+      currentUserEmail = decoded.sub || decoded.email;
+    } catch (e) {
+      localStorage.removeItem("token");
+      navigate("/login");
+    }
+  }
+
+  // Helper: get axios config with Authorization header
+  const axiosConfig = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   };
 
-  // ===== Handler for booking =====
+  // Fetch car details and unavailable booking ranges for this car
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    setLoadingCar(true);
+    setError("");
+    axios
+      .get(`http://localhost:8080/vehicles/${id}`, axiosConfig)
+      .then((res) => setCar(res.data))
+      .catch((err) => {
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          localStorage.removeItem("token");
+          navigate("/login");
+        } else {
+          setError("Failed to load car details.");
+        }
+      })
+      .finally(() => setLoadingCar(false));
+
+    axios
+      .get(`http://localhost:8080/customer/booking/vehicle/${id}/ranges`, axiosConfig)
+      .then((res) => setUnavailableRanges(res.data))
+      .catch(() => setUnavailableRanges([]));
+    // eslint-disable-next-line
+  }, [id, token]);
+
+  // Book Now submission
   const handleBookNow = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
-    // Simple client validations
-    if (!fromDate || !toDate) {
-      setError('Please select both dates!');
+    if (!token) {
+      setError("You are not logged in.");
+      navigate("/login");
       return;
     }
-    if (toDate <= fromDate) {
-      setError('To date must be after From date!');
+    if (!startDate || !endDate) {
+      setError("Please select both dates!");
+      setOverlappingRanges([]);
       return;
     }
-    if (fromDate < todayString()) {
-      setError('From date cannot be in the past!');
+    if (endDate <= startDate) {
+      setError("End date must be after Start date!");
+      setOverlappingRanges([]);
       return;
+    }
+    if (startDate < todayString()) {
+      setError("Start date cannot be in the past!");
+      setOverlappingRanges([]);
+      return;
+    }
+    // Validate against unavailable dates from backend
+    const overlaps = unavailableRanges.filter(
+      (range) => startDate <= range.end && endDate >= range.start
+    );
+    if (overlaps.length > 0) {
+      setOverlappingRanges(overlaps);
+      setError("The Car is not available on selected dates. See conflicts below!");
+      return;
+    } else {
+      setOverlappingRanges([]);
     }
 
-    // (Optional for now) Check if dates overlap any unavailable range
-    if (
-      unavailableRanges.some(
-        (range) =>
-          (fromDate <= range.end && toDate >= range.start)
-      )
-    ) {
-      setError('Selected dates overlap with an existing booking!');
-      return;
-    }
-
-    // READY for backend call: Make POST request to bookings API here
-    /* Example:
-    const res = await fetch('/api/bookings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // Add Authorization if using JWT: 'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({
+    try {
+      const bookingReq = {
+        userId: currentUserId,
         vehicleId: id,
-        fromDate,
-        toDate,
-        // You may need customer info/user id from auth or context
-      }),
-    });
-    if (!res.ok) {
-      const errMsg = await res.text();
-      setError(errMsg || 'Booking failed');
-      return;
+        startDate,
+        endDate,
+      };
+      await axios.post(`http://localhost:8080/customer/booking`, bookingReq, axiosConfig);
+      navigate("/customer/my-bookings");
+    } catch (err) {
+      if (err.response && err.response.data && err.response.data.message) {
+        setError(err.response.data.message);
+      } else {
+        setError("Booking failed. Please try again later.");
+      }
+      setOverlappingRanges([]);
     }
-    */
-
-    // On success, route to My Bookings page
-    navigate('/customer/my-bookings');
   };
+
+  // Loading/error handling
+  if (loadingCar) {
+    return (
+      <div className="container py-5 text-center">
+        <div className="spinner-border text-primary" />
+      </div>
+    );
+  }
+  if (error && !car) {
+    return (
+      <div className="container py-5 text-center">
+        <div className="alert alert-danger">{error}</div>
+      </div>
+    );
+  }
+  if (!car) {
+    return null;
+  }
+
+  // Cloudinary-compatible image logic
+  // Accepts either car.imageUrl or car.image as the URL. Fallback to placeholder if not set.
+  const carImage =
+    car.imageUrl || car.image || "https://via.placeholder.com/280x155?text=No+Image";
 
   return (
     <div className="container py-5">
@@ -113,26 +165,33 @@ function CarDetailsPage() {
               {/* Car Image */}
               <div className="col-lg-5 col-md-5 text-center py-4">
                 <img
-                  src={car.image}
+                  src={carImage}
                   alt={car.name}
                   className="img-fluid rounded-3 shadow-sm w-90"
                   style={{
                     maxWidth: 280,
                     height: 155,
-                    objectFit: "cover"
+                    objectFit: "cover",
                   }}
+                  loading="lazy"
+                  onError={e => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/280x155?text=No+Image"; }}
                 />
               </div>
               {/* Car Details & Booking Form */}
-              <div className="col-lg-7 col-md-7 px-4 py-4" style={{
-                minHeight: "190px", display: "flex",
-                flexDirection: "column", justifyContent: "center"
-              }}>
+              <div
+                className="col-lg-7 col-md-7 px-4 py-4"
+                style={{
+                  minHeight: "190px",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                }}
+              >
                 {/* Title & Price */}
                 <div className="d-flex align-items-baseline mb-3 gap-4 flex-wrap">
                   <span className="fw-bold fs-2 text-primary">{car.name}</span>
                   <span className="fw-bold fs-5" style={{ color: "#16a085" }}>
-                    ₹{car.price}
+                    ₹{car.pricePerDay}
                   </span>
                   <span className="text-secondary ms-0 ms-lg-2 fs-6">/day</span>
                 </div>
@@ -142,33 +201,40 @@ function CarDetailsPage() {
                   <span>{car.fuel}</span>
                   <span className="fs-5 ms-3">👥</span>
                   <span>{car.capacity}</span>
-                  <span className="fs-5 ms-3">🛣️Mileage</span>
+                  <span className="fs-5 ms-3">🛣️ Mileage</span>
                   <span>{car.mileage}</span>
                 </div>
                 {/* Date Selection & Booking Form */}
-                <form className="row row-cols-lg-auto g-3 align-items-end" onSubmit={handleBookNow} autoComplete="off">
+                <form
+                  className="row row-cols-lg-auto g-3 align-items-end"
+                  onSubmit={handleBookNow}
+                  autoComplete="off"
+                >
                   <div className="col-12">
-                    <label htmlFor="fromDate" className="form-label text-primary fw-semibold">From</label>
+                    <label htmlFor="startDate" className="form-label text-primary fw-semibold">
+                      Start
+                    </label>
                     <input
                       type="date"
                       className="form-control"
-                      id="fromDate"
-                      value={fromDate}
+                      id="startDate"
+                      value={startDate}
                       min={todayString()}
-                      // Optionally: add logic to disable unavailable dates with a 3rd party picker
-                      onChange={e => setFromDate(e.target.value)}
+                      onChange={e => setStartDate(e.target.value)}
                       required
                     />
                   </div>
                   <div className="col-12">
-                    <label htmlFor="toDate" className="form-label text-primary fw-semibold">To</label>
+                    <label htmlFor="endDate" className="form-label text-primary fw-semibold">
+                      End
+                    </label>
                     <input
                       type="date"
                       className="form-control"
-                      id="toDate"
-                      value={toDate}
-                      min={fromDate ? fromDate : todayString()}
-                      onChange={e => setToDate(e.target.value)}
+                      id="endDate"
+                      value={endDate}
+                      min={startDate ? startDate : todayString()}
+                      onChange={e => setEndDate(e.target.value)}
                       required
                     />
                   </div>
@@ -180,22 +246,52 @@ function CarDetailsPage() {
                         background: "#112266",
                         borderRadius: "0.5rem",
                         fontWeight: "600",
-                        fontSize: "1rem"
+                        fontSize: "1rem",
                       }}
-                      onMouseOver={e => e.currentTarget.style.background = "#2730a4"}
-                      onMouseOut={e => e.currentTarget.style.background = "#112266"}
+                      onMouseOver={e =>
+                        (e.currentTarget.style.background = "#2730a4")
+                      }
+                      onMouseOut={e =>
+                        (e.currentTarget.style.background = "#112266")
+                      }
                     >
                       Book Now
                     </button>
                   </div>
-                  {error &&
+                  {error && (
                     <div className="col-12">
                       <div className="alert alert-danger mt-2 mb-0 py-2" style={{ fontSize: "0.98rem" }}>
                         {error}
                       </div>
+                      {overlappingRanges.length > 0 && (
+                        <div className="mt-2">
+                          <strong>Conflicting Date Ranges:</strong>
+                          <ul className="mb-0">
+                            {overlappingRanges.map((range, idx) => (
+                              <li key={idx}>
+                                {range.start} to {range.end}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
-                  }
+                  )}
                 </form>
+
+                {/* Show already-unavailable booking date ranges */}
+                {unavailableRanges.length > 0 && (
+                  <div className="alert alert-warning mt-4" style={{ fontSize: "1rem" }}>
+                    <strong>Already Booked Dates:</strong>
+                    <ul className="mb-0">
+                      {unavailableRanges.map((range, idx) => (
+                        <li key={idx}>
+                          {range.start} to {range.end}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           </div>
