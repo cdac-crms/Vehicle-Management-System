@@ -34,7 +34,6 @@ public class PaymentServiceImpl implements PaymentService {
     private final BookingDao bookingDao;
     private final ModelMapper modelMapper;
     
-    
     @Override
     public PaymentResponseDto createManualPayment(PaymentRequestDto dto) {
         // Find booking and check user ownership
@@ -45,13 +44,14 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("Unauthorized: Booking does not belong to userId");
         }
 
-       //  Optionally allow payment only for confirmed bookings
-         if (booking.getBookingStatus() != BookingStatus.CONFIRMED) {
-             throw new RuntimeException("Payment only allowed for CONFIRMED bookings");
-         }
+        // Optionally allow payment only for APPROVED bookings
+        if (booking.getBookingStatus() != BookingStatus.APPROVED) {
+            throw new RuntimeException("Payment only allowed for APPROVED bookings");
+        }
 
         // Build payment entity
         Payment payment = new Payment();
+        
         payment.setBooking(booking);
         payment.setAmount(BigDecimal.valueOf(dto.getAmount()));
         payment.setPaymentMethod(PaymentMethod.valueOf(dto.getPaymentMethod()));
@@ -59,6 +59,10 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setTransactionId(UUID.randomUUID().toString());
 
         Payment saved = paymentDao.save(payment);
+
+        // ✅ UPDATE BOOKING STATUS TO CONFIRMED AFTER SUCCESSFUL PAYMENT
+        booking.setBookingStatus(BookingStatus.CONFIRMED);
+        bookingDao.save(booking); // Save the updated booking
 
         // Map Payment entity to DTO
         PaymentResponseDto res = modelMapper.map(saved, PaymentResponseDto.class);
