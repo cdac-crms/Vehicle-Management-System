@@ -27,7 +27,7 @@ import VehicleDetails from "./Pages/Admin/VehicleComponent/VehicleDetails";
 import ViewBookingDetails from "./Pages/Admin/BookingComponent/ViewBookingDetails";
 import ViewCustomerProfile from "./Pages/Admin/CustomerComponent/ViewCustomerProfile";
 import PaymentSummary from "./Pages/Admin/BookingComponent/PaymentSummary";
-import ViewFeedback from "./Pages/Admin/BookingComponent/ViewFeedback";
+import ViewReview from "./Pages/Admin/BookingComponent/ViewReview";
 
 
 
@@ -54,7 +54,7 @@ function App() {
         <Route path="/admin/view-vehicle/:id" element={<VehicleDetails />} />
         <Route path="/admin/customer/:id" element={<ViewCustomerProfile />} />
         <Route path="/admin/view-payments" element={<PaymentSummary />} />
-        <Route path="/admin/view-feedback" element={<ViewFeedback />} />
+        <Route path="/admin/view-reviews" element={<ViewReview />} />
       
 
 
@@ -65,7 +65,7 @@ function App() {
         <Route path="/customer/update-profile" element={<UpdateProfilePage />} />
         <Route path="/customer/my-profile" element={<MyProfilePage />} />
         <Route path="/customer/payment/:id" element={<PaymentPage />} />
-         <Route path="/customer/help-support" element={<HelpSupport />} />
+        <Route path="/customer/help-support" element={<HelpSupport />} />
         
 
 

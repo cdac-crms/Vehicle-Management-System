@@ -233,11 +233,11 @@ const Header = () => {
 
                 <li className="nav-item">
                   <Link
-                    to="/admin/view-feedback"
+                    to="/admin/view-reviews"
                     className="nav-link d-flex align-items-center text-light"
                     style={{ fontWeight: 500 }}
                   >
-                    <VscFeedback  style={iconStyle} /> Feedback
+                    <VscFeedback  style={iconStyle} /> Reviews
                   </Link>
                 </li>
 
