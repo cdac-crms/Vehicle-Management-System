@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { jwtDecode } from "jwt-decode";
 
 // Config
 const API_BASE = 'http://localhost:8080';
@@ -52,33 +51,20 @@ export default function MyBookingsPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
 
-  // Get token, extract userId (now from localStorage)
+  // Get JWT token and userId from localStorage (stored during login)
   const token = localStorage.getItem('token');
-  let currentUserId = null;
-  if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      currentUserId = decoded.id || decoded.userId;
-      const now = Date.now() / 1000;
-      if (decoded.exp && decoded.exp < now) {
-        localStorage.removeItem('token');
-        navigate('/login');
-        return null;
-      }
-    } catch (e) {
-      localStorage.removeItem('token');
-      navigate('/login');
-      return null;
-    }
-  }
+  const currentUserId = localStorage.getItem('userId');
 
   useEffect(() => {
     if (!token || !currentUserId) {
+      setErrorMsg('Authentication required. Please login to view your bookings.');
       navigate('/login');
       return;
     }
+    
     setLoading(true);
     setErrorMsg('');
+    
     axios.get(`${API_BASE}/customer/booking?userId=${currentUserId}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -88,19 +74,30 @@ export default function MyBookingsPage() {
       })
       .catch(err => {
         if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          // Clear all auth-related localStorage items
           localStorage.removeItem('token');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('role');
+          localStorage.removeItem('email');
+          localStorage.removeItem('name');
           navigate('/login');
         } else {
           setErrorMsg(err.response?.data?.message || 'Error fetching bookings');
         }
         setLoading(false);
       });
-    // eslint-disable-next-line
   }, [token, currentUserId, navigate]);
 
   // Cancel booking: userId as param
   const handleCancel = async (booking) => {
+    if (!token || !currentUserId) {
+      toast.error('Authentication required. Please login again.');
+      navigate('/login');
+      return;
+    }
+
     if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+    
     try {
       await axios.put(
         `${API_BASE}/customer/booking/${booking.bookingId}/cancel?userId=${currentUserId}`,
@@ -116,6 +113,10 @@ export default function MyBookingsPage() {
     } catch (err) {
       if (err.response && (err.response.status === 401 || err.response.status === 403)) {
         localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('role');
+        localStorage.removeItem('email');
+        localStorage.removeItem('name');
         navigate('/login');
       } else {
         toast.error(err.response?.data?.message || 'Failed to cancel booking!');
@@ -124,6 +125,12 @@ export default function MyBookingsPage() {
   };
 
   const handlePay = (booking) => {
+    if (!token || !currentUserId) {
+      toast.error('Authentication required. Please login again.');
+      navigate('/login');
+      return;
+    }
+
     const totalDays = getDayDiff(booking.startDate, booking.endDate);
     const totalAmount = (booking.pricePerDay || 0) * totalDays;
     navigate(`/customer/payment/${booking.bookingId}`, {
@@ -141,12 +148,16 @@ export default function MyBookingsPage() {
     });
   };
 
-  // Pass userId via location.state
+  // No longer passing userId via location.state since BookingDetailsPage gets it from localStorage
   const handleView = (booking) => {
+    if (!token || !currentUserId) {
+      toast.error('Authentication required. Please login again.');
+      navigate('/login');
+      return;
+    }
+
     toast.info(`Opening details for booking #${booking.bookingId}`);
-    navigate(`/customer/booking-details/${booking.bookingId}`, {
-      state: { userId: currentUserId }
-    });
+    navigate(`/customer/booking-details/${booking.bookingId}`);
   };
 
   const statusStyleMap = {
@@ -155,6 +166,19 @@ export default function MyBookingsPage() {
     CANCELLED: badgeStyles.cancelled,
     CONFIRMED: badgeStyles.confirmed,
   };
+
+  // Early return if not authenticated
+  if (!token || !currentUserId) {
+    return (
+      <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: '#f5f7fa' }}>
+        <div className="text-center">
+          <div className="alert alert-warning">
+            Authentication required. Redirecting to login...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-vh-100" style={{ background: '#f5f7fa' }}>
@@ -175,8 +199,16 @@ export default function MyBookingsPage() {
         >
           All Bookings
         </h2>
-        {loading && <div>Loading bookings...</div>}
+        
+        {loading && (
+          <div className="text-center py-4">
+            <div className="spinner-border text-primary" />
+            <div className="mt-2">Loading bookings...</div>
+          </div>
+        )}
+        
         {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
+        
         <div className="table-responsive">
           <table className="table align-middle mb-0" style={{ fontSize: '1rem', background: '#fff', borderCollapse: 'collapse' }}>
             <thead>
@@ -195,7 +227,12 @@ export default function MyBookingsPage() {
             <tbody>
               {(!loading && bookings.length === 0) ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: "center" }}>No Bookings Yet.</td>
+                  <td colSpan={9} style={{ textAlign: "center", padding: "2rem" }}>
+                    <div className="text-muted">
+                      <i className="bi bi-calendar-x" style={{ fontSize: "3rem" }}></i>
+                      <div className="mt-2">No Bookings Yet.</div>
+                    </div>
+                  </td>
                 </tr>
               ) : (
                 bookings.map(b => {

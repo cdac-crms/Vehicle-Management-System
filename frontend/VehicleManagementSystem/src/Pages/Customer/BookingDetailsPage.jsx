@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AiFillStar } from "react-icons/ai";
@@ -41,9 +41,7 @@ function getDayDiff(from, to) {
 
 export default function BookingDetailsPage() {
   const { id } = useParams(); // BookingId
-  const location = useLocation();
   const navigate = useNavigate();
-  const userId = location.state?.userId;
 
   const [booking, setBooking] = useState(null);
   const [vehicle, setVehicle] = useState(null);
@@ -57,21 +55,26 @@ export default function BookingDetailsPage() {
   const [postingReview, setPostingReview] = useState(false);
   const [reviewErrMsg, setReviewErrMsg] = useState("");
 
-  // Read token from localStorage instead of sessionStorage
+  // Read token and userId from localStorage (stored during login)
   const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
 
   useEffect(() => {
     if (!id || !userId) {
-      setError("Missing booking or user information.");
+      setError("Missing booking or user information. Please login again.");
       setLoading(false);
       return;
     }
+    if (!token) {
+      setError("Authentication required. Please login to view this booking.");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError("");
 
-    const axiosAuthConfig = token
-      ? { headers: { Authorization: `Bearer ${token}` } }
-      : {};
+    const axiosAuthConfig = { headers: { Authorization: `Bearer ${token}` } };
 
     axios.get(`${API_BASE_URL}/customer/booking/${id}?userId=${userId}`, axiosAuthConfig)
       .then(res => {
@@ -150,6 +153,11 @@ export default function BookingDetailsPage() {
   const handleReviewSubmit = (e) => {
     e.preventDefault();
     setReviewErrMsg("");
+
+    if (!token || !userId) {
+      setReviewErrMsg("Authentication required. Please login to submit a review.");
+      return;
+    }
     if (stars === 0) {
       setReviewErrMsg("Please select a star rating!");
       return;
@@ -161,9 +169,7 @@ export default function BookingDetailsPage() {
     }
     setPostingReview(true);
 
-    const axiosAuthConfig = token
-      ? { headers: { Authorization: `Bearer ${token}` } }
-      : {};
+    const axiosAuthConfig = { headers: { Authorization: `Bearer ${token}` } };
 
     axios
       .post(

@@ -9,7 +9,11 @@ export default function PaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Destructure navigation state; userId must be included in location.state!
+  // Get JWT token and userId from localStorage (stored during login)
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
+
+  // Destructure navigation state (userId no longer required from location.state)
   const {
     bookingId,
     carName,
@@ -17,18 +21,35 @@ export default function PaymentPage() {
     startDate,
     endDate,
     totalDays,
-    amount,
-    userId
+    amount
   } = location.state || {};
 
   const [finalAmount, setFinalAmount] = useState(amount || null);
-  const [loading, setLoading] = useState(!amount || !bookingId || !userId);
+  const [loading, setLoading] = useState(!amount || !bookingId);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [method, setMethod] = useState(PAYMENT_METHODS[0]);
 
+  // Helper function to clear auth data and redirect
+  const clearAuthAndRedirect = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("role");
+    localStorage.removeItem("email");
+    localStorage.removeItem("name");
+    navigate("/login");
+  };
+
   useEffect(() => {
-    if (!amount || !bookingId || !userId) {
+    // Check authentication first
+    if (!token || !userId) {
+      setError("Authentication required. Please login to make payment.");
+      clearAuthAndRedirect();
+      return;
+    }
+
+    // Check if required payment data is available
+    if (!amount || !bookingId) {
       setError("Cannot process payment: No booking/payment data found.");
       setTimeout(() => {
         navigate("/customer/my-bookings");
@@ -37,48 +58,86 @@ export default function PaymentPage() {
       setFinalAmount(amount);
       setLoading(false);
     }
-  }, [amount, bookingId, userId, navigate]);
+  }, [amount, bookingId, token, userId]);
 
-  const handleShowForm = () => setShowForm(true);
+  const handleShowForm = () => {
+    if (!token || !userId) {
+      setError("Authentication required. Please login again.");
+      clearAuthAndRedirect();
+      return;
+    }
+    setShowForm(true);
+  };
 
   const handlePayment = async (e) => {
     e.preventDefault();
+    
+    if (!token || !userId) {
+      setError("Authentication required. Please login again.");
+      clearAuthAndRedirect();
+      return;
+    }
+
     setError("");
     setLoading(true);
+    
     try {
-      // Use exact backend path
       const response = await fetch("http://localhost:8080/customer/payments", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({
           bookingId,
           amount: finalAmount,
           paymentMethod: method,
-          userId, // ⚠️ Include if and only if your backend requires it in request!
+          userId, // Include userId as backend requires it
         })
       });
 
       setLoading(false);
 
       let apiResp = null;
-      try { apiResp = await response.json(); } catch { }
-      // Controller: PaymentResponseDto (success), ApiResponse (error). 
-      // If you are returning PaymentResponseDto on success (best!), use
-      // `if (response.ok && apiResp && apiResp.paymentId)`
-      // If you are returning ApiResponse { success: true }
+      try { 
+        apiResp = await response.json(); 
+      } catch { }
+
       if (response.ok && (apiResp?.success || apiResp?.paymentId)) {
-        // Show message from backend or fallback
+        // Show success message from backend or fallback
         alert(apiResp?.message || "Payment recorded successfully!");
         navigate("/customer/my-bookings");
       } else {
-        // Prefer error message from API
-        setError(apiResp?.message || "Payment failed to record.");
+        // Handle authentication errors
+        if (response.status === 401 || response.status === 403) {
+          setError("Session expired. Please login again.");
+          clearAuthAndRedirect();
+        } else {
+          // Other errors
+          setError(apiResp?.message || "Payment failed to record.");
+        }
       }
     } catch (err) {
       setLoading(false);
       setError(err.message || "Payment failed to record.");
     }
   };
+
+  // Early return if not authenticated
+  if (!token || !userId) {
+    return (
+      <div className="container py-5">
+        <div className="card shadow-sm mx-auto" style={{ maxWidth: 430, borderRadius: 14 }}>
+          <div className="card-body p-4 text-center">
+            <Alert variant="warning">
+              <i className="bi bi-exclamation-triangle-fill me-2"></i>
+              Authentication required. Redirecting to login...
+            </Alert>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const tableStyle = {
     width: "100%",
@@ -118,14 +177,17 @@ export default function PaymentPage() {
             className="fw-bold text-center mb-4"
             style={{ color: NAVY, fontSize: "1.7rem", letterSpacing: ".01em" }}
           >
+            <i className="bi bi-credit-card me-2"></i>
             Payment Details
           </h4>
           {loading ? (
             <div className="d-flex justify-content-center py-5">
               <Spinner animation="border" variant="primary" />
+              <div className="ms-3 align-self-center">Processing payment...</div>
             </div>
           ) : error ? (
             <Alert variant="danger" className="text-center">
+              <i className="bi bi-exclamation-circle me-2"></i>
               {error}
             </Alert>
           ) : (
@@ -173,7 +235,7 @@ export default function PaymentPage() {
               {showForm ? (
                 <form onSubmit={handlePayment}>
                   <div className="mb-3">
-                    <label className="form-label">Payment Method</label>
+                    <label className="form-label fw-semibold">Payment Method</label>
                     <select
                       className="form-select"
                       value={method}
@@ -189,11 +251,27 @@ export default function PaymentPage() {
                   </div>
                   <button
                     type="submit"
-                    className="btn btn-success w-100"
-                    style={{ background: NAVY, border: "none" }}
+                    className="btn btn-success w-100 fw-semibold"
+                    style={{ 
+                      background: NAVY, 
+                      border: "none",
+                      fontSize: "1.1rem",
+                      borderRadius: 7,
+                      height: 48
+                    }}
                     disabled={loading}
                   >
-                    {loading ? "Processing..." : "Submit Payment"}
+                    {loading ? (
+                      <>
+                        <Spinner animation="border" size="sm" className="me-2" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-check-circle me-2"></i>
+                        Submit Payment
+                      </>
+                    )}
                   </button>
                 </form>
               ) : (
@@ -210,7 +288,8 @@ export default function PaymentPage() {
                   onClick={handleShowForm}
                   disabled={loading || !finalAmount}
                 >
-                  Pay
+                  <i className="bi bi-wallet2 me-2"></i>
+                  Pay Now
                 </button>
               )}
             </div>
