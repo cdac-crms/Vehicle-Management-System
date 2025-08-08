@@ -2,14 +2,25 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8080/vehicle';
 
+// Helper to get token from localStorage
+const getAuthHeaders = (isMultipart = false) => {
+  const token = localStorage.getItem("token");
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(isMultipart && { "Content-Type": "multipart/form-data" }),
+    },
+  };
+};
+
 // Add Vehicle
 export const addVehicle = async (formData) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/addVehicle`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
+    const response = await axios.post(
+      `${API_BASE_URL}/addVehicle`,
+      formData,
+      getAuthHeaders(true)
+    );
     return response.data;
   } catch (error) {
     console.error("Error adding vehicle:", error.response?.data?.message || error.message);
@@ -20,7 +31,10 @@ export const addVehicle = async (formData) => {
 // Get All Vehicles
 export const getAllVehicles = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/getAllVehicles`);
+    const response = await axios.get(
+      `${API_BASE_URL}/getAllVehicles`,
+      getAuthHeaders()
+    );
     console.log("Fetched vehicles:", response.data);
     return response.data;
   } catch (error) {
@@ -32,7 +46,10 @@ export const getAllVehicles = async () => {
 // Get Vehicle by ID
 export const getVehicleById = async (vehicleId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/getVehicleById/${vehicleId}`);
+    const response = await axios.get(
+      `${API_BASE_URL}/getVehicleById/${vehicleId}`,
+      getAuthHeaders()
+    );
     console.log("Fetched vehicle:", response.data);
     return response.data;
   } catch (error) {
@@ -44,11 +61,11 @@ export const getVehicleById = async (vehicleId) => {
 // Update Vehicle
 export const updateVehicle = async (vehicleId, formData) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/update/${vehicleId}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
+    const response = await axios.put(
+      `${API_BASE_URL}/update/${vehicleId}`,
+      formData,
+      getAuthHeaders(true)
+    );
     return response.data;
   } catch (error) {
     console.error("Error updating vehicle:", error.response?.data?.message || error.message);
@@ -59,7 +76,10 @@ export const updateVehicle = async (vehicleId, formData) => {
 // Delete Vehicle
 export const deleteVehicle = async (vehicleId) => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/delete/${vehicleId}`);
+    const response = await axios.delete(
+      `${API_BASE_URL}/delete/${vehicleId}`,
+      getAuthHeaders()
+    );
     return response.data;
   } catch (error) {
     console.error("Error deleting vehicle:", error.response?.data?.message || error.message);
