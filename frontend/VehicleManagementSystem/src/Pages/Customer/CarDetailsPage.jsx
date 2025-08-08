@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
 
 // Helper for today's date string
 function todayString() {
@@ -25,20 +24,14 @@ function CarDetailsPage() {
   const [unavailableRanges, setUnavailableRanges] = useState([]);
   const [overlappingRanges, setOverlappingRanges] = useState([]);
 
-  // Get JWT token and decode user info from it (now from localStorage)
+  // Get JWT token and userId from localStorage (stored during login)
   const token = localStorage.getItem("token");
-  let currentUserId = null;
-  let currentUserEmail = null;
+  const currentUserId = localStorage.getItem("userId");
 
-  if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      currentUserId = decoded.userId;
-      currentUserEmail = decoded.sub || decoded.email;
-    } catch (e) {
-      localStorage.removeItem("token");
-      navigate("/login");
-    }
+  // Check if user is authenticated
+  if (!token || !currentUserId) {
+    navigate("/login");
+    return null;
   }
 
   // Helper: get axios config with Authorization header
@@ -50,18 +43,23 @@ function CarDetailsPage() {
 
   // Fetch car details and unavailable booking ranges for this car
   useEffect(() => {
-    if (!token) {
+    if (!token || !currentUserId) {
       navigate("/login");
       return;
     }
     setLoadingCar(true);
     setError("");
+    
     axios
       .get(`http://localhost:8080/vehicles/${id}`, axiosConfig)
       .then((res) => setCar(res.data))
       .catch((err) => {
         if (err.response && (err.response.status === 401 || err.response.status === 403)) {
           localStorage.removeItem("token");
+          localStorage.removeItem("userId");
+          localStorage.removeItem("role");
+          localStorage.removeItem("email");
+          localStorage.removeItem("name");
           navigate("/login");
         } else {
           setError("Failed to load car details.");
@@ -74,14 +72,14 @@ function CarDetailsPage() {
       .then((res) => setUnavailableRanges(res.data))
       .catch(() => setUnavailableRanges([]));
     // eslint-disable-next-line
-  }, [id, token]);
+  }, [id, token, currentUserId]);
 
   // Book Now submission
   const handleBookNow = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!token) {
+    if (!token || !currentUserId) {
       setError("You are not logged in.");
       navigate("/login");
       return;
@@ -123,7 +121,14 @@ function CarDetailsPage() {
       await axios.post(`http://localhost:8080/customer/booking`, bookingReq, axiosConfig);
       navigate("/customer/my-bookings");
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.message) {
+      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("role");
+        localStorage.removeItem("email");
+        localStorage.removeItem("name");
+        navigate("/login");
+      } else if (err.response && err.response.data && err.response.data.message) {
         setError(err.response.data.message);
       } else {
         setError("Booking failed. Please try again later.");

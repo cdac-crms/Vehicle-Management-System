@@ -23,26 +23,33 @@ const CustomerDashboard = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Helper: get JWT token from storage
-  const getToken = () => localStorage.getItem("token");
+  // Get JWT token and userId from localStorage (stored during login)
+  const token = localStorage.getItem("token");
+  const userId = localStorage.getItem("userId");
 
-  // Fetch available cars on load & on search
+  // Check authentication on component mount
   useEffect(() => {
+    if (!token || !userId) {
+      setError("You are not logged in. Please login to continue.");
+      navigate("/login");
+      return;
+    }
     fetchCars();
     // eslint-disable-next-line
-  }, []);
+  }, [token, userId]);
 
-  // Function to fetch all or searched vehicles **with JWT**
+  // Function to fetch all or searched vehicles with JWT
   const fetchCars = async (searchTerm = "") => {
+    if (!token || !userId) {
+      setError("Authentication required. Please login again.");
+      navigate("/login");
+      return;
+    }
+
     setLoading(true);
     setError("");
+    
     try {
-      const token = getToken();
-      if (!token) {
-        setError("Session expired. Please login again.");
-        navigate("/login");
-        return;
-      }
       const url = searchTerm
         ? `http://localhost:8080/vehicle?search=${encodeURIComponent(searchTerm)}`
         : `http://localhost:8080/vehicle`;
@@ -55,9 +62,14 @@ const CustomerDashboard = () => {
 
       setCars(response.data);
     } catch (err) {
-      if (err.response && err.response.status === 401) {
+      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
         setError("Session expired. Please login again.");
+        // Clear all auth-related localStorage items
         localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("role");
+        localStorage.removeItem("email");
+        localStorage.removeItem("name");
         navigate("/login");
       } else {
         setError("Failed to fetch cars. Please try again later.");
@@ -69,12 +81,28 @@ const CustomerDashboard = () => {
 
   // On clicking search or on pressing Enter
   const handleSearch = () => {
+    if (!token || !userId) {
+      setError("Please login to search cars.");
+      navigate("/login");
+      return;
+    }
     fetchCars(search.trim());
   };
 
   const handleInputKeyDown = (e) => {
     if (e.key === "Enter") handleSearch();
   };
+
+  // Early return if not authenticated
+  if (!token || !userId) {
+    return (
+      <div className="container py-5 text-center">
+        <div className="alert alert-warning">
+          Authentication required. Redirecting to login...
+        </div>
+      </div>
+    );
+  }
 
   // Arrange cards into rows for 3-column layout
   const rows = [];

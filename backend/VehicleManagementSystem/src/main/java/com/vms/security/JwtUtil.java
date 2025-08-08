@@ -34,6 +34,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("role", role)
+                
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(key, SignatureAlgorithm.HS512)
