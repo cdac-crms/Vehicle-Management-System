@@ -1,32 +1,12 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { AiFillStar } from "react-icons/ai";
+import { Spinner } from "react-bootstrap";
 
-// Demo booking data array
-const demoBookings = [
-  {
-    id: "1",
-    carImage: "https://images.unsplash.com/photo-1511918984145-48de785d4c4e?auto=format&fit=crop&w=600&q=80",
-    carName: "Swift LXI",
-    variant: "Petrol",
-    pricePerDay: 1899,
-    fromDate: "2025-07-23",
-    toDate: "2025-07-25",
-    bookingDate: "2025-07-20T09:33:00.000Z",
-    status: "Approved",
-    paymentStatus: "Success",
-    paymentId: "PAY12345",
-    bookingId: "BKG0001",
-    paymentMethod: "Credit Card",
-    paidOn: "2025-07-20T10:01:00.000Z",
-    amount: 5697,
-    transactionId: "TRX567834",
-  },
-  // ...add more demo bookings here if desired
-];
-
+const API_BASE_URL = "http://localhost:8080";
 const DEFAULT_CAR_IMG = "https://via.placeholder.com/260x120?text=Car+Photo";
 
 const badgeStyles = {
@@ -37,17 +17,22 @@ const badgeStyles = {
   default: { color: '#2e7d32', backgroundColor: '#e8f5e9', padding: '0.18em 0.85em', borderRadius: 4, fontWeight: 600 }
 };
 const paymentBadgeStyles = {
-  success: { color: '#0a7c36', backgroundColor: '#e3faeb', padding: '0.18em 0.85em', borderRadius: 4, fontWeight: 600 },
-  failed: { color: '#b71c1c', backgroundColor: '#ffdde0', padding: '0.18em 0.85em', borderRadius: 4, fontWeight: 600 }
+  PAID: { color: '#0a7c36', backgroundColor: '#e3faeb', padding: '0.18em 0.85em', borderRadius: 4, fontWeight: 600 },
+  FAILED: { color: '#b71c1c', backgroundColor: '#ffdde0', padding: '0.18em 0.85em', borderRadius: 4, fontWeight: 600 },
+  PENDING: { color: '#a67300', backgroundColor: '#fffbea', padding: '0.18em 0.85em', borderRadius: 4, fontWeight: 600 },
+  '--': { color: "#aaa" }
 };
 
 function formatDate(dateStr) {
+  if (!dateStr) return "-";
   return new Date(dateStr).toLocaleDateString();
 }
 function formatDateTime(dateStr) {
+  if (!dateStr) return "-";
   return new Date(dateStr).toLocaleString();
 }
 function getDayDiff(from, to) {
+  if (!from || !to) return "-";
   const start = new Date(from);
   const end = new Date(to);
   const ms = end - start;
@@ -55,80 +40,176 @@ function getDayDiff(from, to) {
 }
 
 export default function BookingDetailsPage() {
-  const { id } = useParams();
+  const { id } = useParams(); // BookingId
+  const location = useLocation();
   const navigate = useNavigate();
+  const userId = location.state?.userId;
 
-  // Use hardcoded booking data:
-  const booking = demoBookings.find((b) => String(b.id) === id);
+  const [booking, setBooking] = useState(null);
+  const [vehicle, setVehicle] = useState(null);
+  const [payment, setPayment] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   // Review state
   const [stars, setStars] = useState(0);
   const [description, setDescription] = useState("");
+  const [postingReview, setPostingReview] = useState(false);
+  const [reviewErrMsg, setReviewErrMsg] = useState("");
 
-  // Badge logic
-  let statusStyle;
-  switch ((booking?.status || "").toLowerCase()) {
-    case "pending": statusStyle = badgeStyles.pending; break;
-    case "cancelled": statusStyle = badgeStyles.cancelled; break;
-    case "approved": statusStyle = badgeStyles.approved; break;
-    case "confirm": statusStyle = badgeStyles.confirm; break;
-    default: statusStyle = badgeStyles.default;
-  }
-  let paymentStyle, paymentLabel;
-  if ((booking?.paymentStatus || "").toLowerCase() === "success") {
-    paymentStyle = paymentBadgeStyles.success; paymentLabel = "Success";
-  } else if ((booking?.paymentStatus || "").toLowerCase() === "failed") {
-    paymentStyle = paymentBadgeStyles.failed; paymentLabel = "Failed";
-  } else {
-    paymentStyle = { color: "#aaa" }; paymentLabel = "-";
-  }
+  // Read token from localStorage instead of sessionStorage
+  const token = localStorage.getItem("token");
 
-  if (!booking) {
+  useEffect(() => {
+    if (!id || !userId) {
+      setError("Missing booking or user information.");
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError("");
+
+    const axiosAuthConfig = token
+      ? { headers: { Authorization: `Bearer ${token}` } }
+      : {};
+
+    axios.get(`${API_BASE_URL}/customer/booking/${id}?userId=${userId}`, axiosAuthConfig)
+      .then(res => {
+        setBooking(res.data);
+        if (res.data.vehicleId) {
+          // Look up vehicle for live info (name, variant, image)
+          return axios.get(`${API_BASE_URL}/vehicles/${res.data.vehicleId}`, axiosAuthConfig)
+            .then(vehRes => setVehicle(vehRes.data))
+            .catch(() => setVehicle(null));
+        } else {
+          setVehicle(null);
+        }
+        return null;
+      })
+      .then(() =>
+        axios.get(`${API_BASE_URL}/customer/payments/booking/${id}?userId=${userId}`, axiosAuthConfig)
+          .then(res => setPayment(res.data))
+          .catch(() => setPayment(null))
+      )
+      .finally(() => setLoading(false))
+      .catch(err => {
+        setLoading(false);
+        setError(
+          err.response?.data?.message ||
+          "Error loading booking, vehicle, or payment details."
+        );
+      });
+  }, [id, userId, token]);
+
+  if (loading) {
     return (
-      <div style={{ background: '#f5f7fa', minHeight: '100vh' }}>
-        <div className="container" style={{ maxWidth: 570, margin: '4rem auto', textAlign: 'center' }}>
+      <div style={{ background: "#f5f7fa", minHeight: "100vh" }}>
+        <div className="container py-5 text-center" style={{ maxWidth: 600 }}>
+          <Spinner animation="border" variant="primary" />
+          <div className="mt-3">Loading booking details...</div>
+        </div>
+      </div>
+    );
+  }
+  if (error || !booking) {
+    return (
+      <div style={{ background: "#f5f7fa", minHeight: "100vh" }}>
+        <div className="container" style={{ maxWidth: 570, margin: "4rem auto", textAlign: "center" }}>
           <div style={{ fontSize: 48, color: "#b30527" }}>⛔️</div>
-          <h1 style={{ color: "#102649", fontWeight: 700 }}>Booking not found</h1>
+          <h1 style={{ color: "#102649", fontWeight: 700 }}>{error || "Booking not found"}</h1>
           <button
             className="btn mt-4"
-            style={{ color: "#fff", background: "#15418c", borderRadius: 6, padding: '0.48em 2em', fontWeight: 600 }}
-            onClick={() => navigate(-1)}
-          >Back</button>
+            style={{ color: "#fff", background: "#15418c", borderRadius: 6, padding: "0.48em 2em", fontWeight: 600 }}
+            onClick={() => navigate("/customer/my-bookings")}
+          >
+            Back to Bookings
+          </button>
         </div>
       </div>
     );
   }
 
-  const totalDays = getDayDiff(booking.fromDate, booking.toDate);
-  const totalPrice = totalDays * booking.pricePerDay;
+  const statusKey = (booking.bookingStatus || booking.status || "").toLowerCase();
+  let statusStyle = badgeStyles[(statusKey === "confirmed" ? "confirm" : statusKey)] || badgeStyles.default;
 
+  const payStat = (payment?.paymentStatus || "").toUpperCase();
+  const paymentStyle = paymentBadgeStyles[payStat] || paymentBadgeStyles["--"];
+  const paymentLabel = payStat === "PAID" ? "Paid" : payStat === "FAILED" ? "Failed" : payStat === "PENDING" ? "Pending" : "-";
+
+  const totalDays = getDayDiff(booking.startDate || booking.fromDate, booking.endDate || booking.toDate);
+  const totalPrice = totalDays * (booking.pricePerDay || 0);
+
+  // Safely get vehicleId for review -- prefer vehicle.vehicleId, else booking.vehicleId
+  const getVehicleId = () =>
+    (vehicle && (vehicle.vehicleId || vehicle.id)) ||
+    booking.vehicleId ||
+    booking.vehicle_id || // compat for snake_case
+    null;
+
+  // Review submit: toast only for success!
   const handleReviewSubmit = (e) => {
     e.preventDefault();
+    setReviewErrMsg("");
     if (stars === 0) {
-      toast.error("Please select a star rating!");
+      setReviewErrMsg("Please select a star rating!");
       return;
     }
-    toast.success("Thank you for your review!");
-    setDescription("");
-    setStars(0);
+    const vehicleId = getVehicleId();
+    if (!vehicleId) {
+      setReviewErrMsg("No valid vehicleId found. Cannot create review.");
+      return;
+    }
+    setPostingReview(true);
+
+    const axiosAuthConfig = token
+      ? { headers: { Authorization: `Bearer ${token}` } }
+      : {};
+
+    axios
+      .post(
+        `${API_BASE_URL}/customer/review`,
+        {
+          vehicleId,
+          userId,
+          rating: stars,
+          message: description
+        },
+        axiosAuthConfig
+      )
+      .then(() => {
+        toast.success("Thank you for your review!");
+        setDescription("");
+        setStars(0);
+        setReviewErrMsg("");
+      })
+      .catch(err => {
+        setReviewErrMsg(
+          err.response?.data?.message || "Failed to submit review!"
+        );
+      })
+      .finally(() => setPostingReview(false));
   };
+
+  const vehicleName = vehicle ? vehicle.name : (booking.carName || "-");
+  const vehicleVariant = vehicle ? vehicle.variant : (booking.variant || "-");
+  const vehicleImgUrl =
+    (vehicle && (vehicle.imageUrl || vehicle.image)) ||
+    booking.carImage ||
+    DEFAULT_CAR_IMG;
 
   return (
     <div style={{ background: '#f5f7fa', minHeight: '100vh' }}>
       <ToastContainer />
       <div className="container pt-5" style={{ maxWidth: 1050, margin: '0 auto' }}>
-
-        {/* Responsive row with two cards side by side */}
         <div className="row gy-4 gx-4 mb-4">
-          {/* Left: Booking Details Card */}
+          {/* Left: Booking Details */}
           <div className="col-md-7">
             <div className="card rounded-4 shadow border-0 h-100 px-0 px-md-2 py-3">
               <div className="row g-0 align-items-center">
-                {/* Car Image */}
                 <div className="col-sm-5 col-12 text-center">
                   <img
-                    src={booking.carImage || DEFAULT_CAR_IMG}
-                    alt={booking.carName}
+                    src={vehicleImgUrl}
+                    alt={vehicleName}
                     className="img-fluid rounded-3 shadow-sm"
                     style={{
                       width: 180,
@@ -140,7 +221,6 @@ export default function BookingDetailsPage() {
                     }}
                   />
                 </div>
-                {/* Details */}
                 <div className="col-sm-7 col-12 px-3">
                   <h4 className="mb-3 fw-bold" style={{ color: "#102649", letterSpacing: "0.5px" }}>
                     Booking Details
@@ -149,68 +229,69 @@ export default function BookingDetailsPage() {
                     <b>Booking ID:</b> <span>{booking.bookingId || booking.id || "-"}</span>
                   </div>
                   <div className="mb-2">
-                    <b>Car Name:</b> <span>{booking.carName}</span>
+                    <b>Car Name:</b> <span>{vehicleName}</span>
                   </div>
                   <div className="mb-2">
-                    <b>Variant:</b> <span>{booking.variant}</span>
+                    <b>Variant:</b> <span>{vehicleVariant}</span>
                   </div>
                   <div className="mb-2">
                     <b>Total Days:</b> <span>{totalDays}</span>
                   </div>
                   <div className="mb-2">
-                    <b>Price/Day:</b> <span>₹{booking.pricePerDay}</span>
+                    <b>Price/Day:</b> <span>₹{booking.pricePerDay || (vehicle && vehicle.pricePerDay) || "-"}</span>
                   </div>
                   <div className="mb-2">
                     <b>Total Price:</b> <span className="fw-semibold">₹{totalPrice}</span>
                   </div>
                   <div className="mb-2">
-                    <b>Booking Date &amp; Time:</b> <span>{formatDateTime(booking.bookingDate)}</span>
+                    <b>Booking Date & Time:</b> <span>{formatDateTime(booking.bookingDate)}</span>
                   </div>
                   <div className="mb-2">
-                    <b>From:</b> <span>{formatDate(booking.fromDate)}</span>
+                    <b>From:</b> <span>{formatDate(booking.startDate || booking.fromDate)}</span>
                   </div>
                   <div className="mb-2">
-                    <b>To:</b> <span>{formatDate(booking.toDate)}</span>
+                    <b>To:</b> <span>{formatDate(booking.endDate || booking.toDate)}</span>
                   </div>
                   <div className="mb-2">
-                    <b>Status:</b> <span style={statusStyle}>{booking.status}</span>
+                    <b>Status:</b> <span style={statusStyle}>{booking.bookingStatus || booking.status || "-"}</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Right: Payment Details Card */}
+          {/* Right: Payment Details */}
           <div className="col-md-5">
             <div className="card rounded-4 shadow border-0 h-100 px-0 px-md-2 py-3">
               <h5 className="mb-3 fw-bold text-center" style={{ color: "#15418c" }}>
                 Payment Details
               </h5>
-              <div className="row mb-2">
-                <div className="col-6"><b>Payment ID:</b></div>
-                <div className="col-6">{booking.paymentId || "-"}</div>
-                <div className="col-6"><b>Booking ID:</b></div>
-                <div className="col-6">{booking.bookingId || booking.id || "-"}</div>
-                <div className="col-6"><b>Payment Method:</b></div>
-                <div className="col-6">{booking.paymentMethod || "-"}</div>
-                <div className="col-6"><b>Payment Status:</b></div>
-                <div className="col-6">
-                  <span style={paymentStyle}>{booking.paymentStatus || paymentLabel || "-"}</span>
+              {payment ? (
+                <div className="row mb-2">
+                  <div className="col-6"><b>Payment ID:</b></div>
+                  <div className="col-6">{payment.paymentId || "-"}</div>
+                  <div className="col-6"><b>Booking ID:</b></div>
+                  <div className="col-6">{payment.bookingId || booking.bookingId || booking.id || "-"}</div>
+                  <div className="col-6"><b>Payment Method:</b></div>
+                  <div className="col-6">{payment.paymentMethod || "-"}</div>
+                  <div className="col-6"><b>Payment Status:</b></div>
+                  <div className="col-6">
+                    <span style={paymentStyle}>{payment.paymentStatus || paymentLabel || "-"}</span>
+                  </div>
+                  <div className="col-6"><b>Paid On:</b></div>
+                  <div className="col-6">{payment.paidOn ? formatDateTime(payment.paidOn) : "-"}</div>
+                  <div className="col-6"><b>Amount Paid:</b></div>
+                  <div className="col-6">₹{payment.amount || totalPrice}</div>
+                  <div className="col-6"><b>Transaction ID:</b></div>
+                  <div className="col-6">{payment.transactionId || "-"}</div>
                 </div>
-                <div className="col-6"><b>Paid On:</b></div>
-                <div className="col-6">
-                  {booking.paidOn ? formatDateTime(booking.paidOn) : "-"}
-                </div>
-                <div className="col-6"><b>Amount Paid:</b></div>
-                <div className="col-6">₹{booking.amount || totalPrice}</div>
-                <div className="col-6"><b>Transaction ID:</b></div>
-                <div className="col-6">{booking.transactionId || "-"}</div>
-              </div>
+              ) : (
+                <div className="text-muted text-center py-3">No payment record found.</div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Below both cards: Review section */}
+        {/* Review section */}
         <div className="row mb-4">
           <div className="col-lg-9 mx-auto">
             <div className="bg-white rounded-4 shadow-sm p-4">
@@ -255,12 +336,18 @@ export default function BookingDetailsPage() {
                     required
                   />
                 </div>
+                {reviewErrMsg && (
+                  <div className="alert alert-danger" style={{ fontSize: "1.04rem", textAlign: "center" }}>
+                    {reviewErrMsg}
+                  </div>
+                )}
                 <div className="d-grid">
                   <button
                     className="btn btn-primary fw-semibold"
                     type="submit"
+                    disabled={postingReview}
                   >
-                    Submit Review
+                    {postingReview ? "Submitting..." : "Submit Review"}
                   </button>
                 </div>
               </form>
@@ -272,4 +359,3 @@ export default function BookingDetailsPage() {
     </div>
   );
 }
-
