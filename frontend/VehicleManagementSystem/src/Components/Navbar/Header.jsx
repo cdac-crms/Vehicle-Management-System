@@ -1,52 +1,73 @@
-
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from "react-router-dom";
 import { MdDashboard } from "react-icons/md";
 import {
-  BsCarFrontFill, BsPencilSquare, BsBoxArrowInRight, BsJournalCheck, BsPersonBadge, BsBoxArrowRight, BsPersonCircle, BsPersonPlus,
-  BsBuilding, BsGearWideConnected, BsListUl, BsPeopleFill, BsQuestionCircle,
-} from 'react-icons/bs';
+  BsCarFrontFill,
+  BsPencilSquare,
+  BsBoxArrowInRight,
+  BsJournalCheck,
+  BsPersonBadge,
+  BsBoxArrowRight,
+  BsPersonCircle,
+  BsPersonPlus,
+  BsBuilding,
+  BsGearWideConnected,
+  BsListUl,
+  BsPeopleFill,
+  BsQuestionCircle,
+} from "react-icons/bs";
 
 import { FaRupeeSign } from "react-icons/fa";
 import { VscFeedback } from "react-icons/vsc";
 
-
 const Header = () => {
   const navigate = useNavigate();
 
-  const token = localStorage.getItem('token');
-  const role = localStorage.getItem('role');
-  const username = localStorage.getItem('name');
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  const username = localStorage.getItem("name");
 
   const logoutHandler = () => {
-    localStorage.removeItem('admin');
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('name');
-    localStorage.removeItem('email');
-    localStorage.removeItem('userId');
-    navigate('/');
+    localStorage.removeItem("admin");
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("name");
+    localStorage.removeItem("email");
+    localStorage.removeItem("userId");
+    navigate("/");
   };
 
   // Dark Blue color for header background
-  const navbarStyle = { backgroundColor: '#102649' };
+  const navbarStyle = { backgroundColor: "#102649" };
 
-  const iconStyle = { marginRight: '5px', verticalAlign: 'middle', fontSize: '1.15em' };
+  const iconStyle = {
+    marginRight: "5px",
+    verticalAlign: "middle",
+    fontSize: "1.15em",
+  };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark shadow-sm " style={navbarStyle}>
-      <div className="container-fluid" >
+    <nav
+      className="navbar navbar-expand-lg navbar-dark shadow-sm "
+      style={navbarStyle}
+    >
+      <div className="container-fluid">
         <Link
           to="/"
           className="navbar-brand fw-bold d-flex align-items-center text-light"
-          style={{ letterSpacing: '0.04em' }}
+          style={{ letterSpacing: "0.04em" }}
         >
-          <BsCarFrontFill style={{ ...iconStyle, fontSize: '1.4em' }} />
+          <BsCarFrontFill style={{ ...iconStyle, fontSize: "1.4em" }} />
           RentARide
         </Link>
         <button
-          className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav"
-          aria-expanded="false" aria-label="Toggle navigation"
-          style={{ outlineOffset: '2px' }}
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+          style={{ outlineOffset: "2px" }}
         >
           <span className="navbar-toggler-icon"></span>
         </button>
@@ -54,7 +75,7 @@ const Header = () => {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto d-flex align-items-center">
             {/* When not logged in */}
-            {!token && (
+            {(!token || !["CUSTOMER", "ADMIN"].includes(role)) && (
               <>
                 <li className="nav-item">
                   <Link
@@ -76,7 +97,7 @@ const Header = () => {
             )}
 
             {/* Customer links */}
-            {token && role === 'CUSTOMER' && (
+            {token && role === "CUSTOMER" && (
               <>
                 <li className="nav-item">
                   <Link
@@ -84,7 +105,8 @@ const Header = () => {
                     className="nav-link d-flex align-items-center text-light"
                     style={{ fontWeight: 500 }}
                   >
-                    <MdDashboard />Dashboard
+                    <MdDashboard />
+                    Dashboard
                   </Link>
                 </li>
                 <li className="nav-item">
@@ -121,10 +143,10 @@ const Header = () => {
                     className="btn d-flex align-items-center fw-semibold ms-2"
                     type="button"
                     style={{
-                      letterSpacing: '-0.02em',
-                      backgroundColor: '#b30527',  // red background
-                      color: '#fff',               // white text
-                      border: 'none',
+                      letterSpacing: "-0.02em",
+                      backgroundColor: "#b30527", // red background
+                      color: "#fff", // white text
+                      border: "none",
                     }}
                   >
                     <BsBoxArrowRight style={iconStyle} /> Logout
@@ -135,11 +157,12 @@ const Header = () => {
                 {username && (
                   <li
                     className="nav-item ms-3 fw-semibold text-light"
-                    style={{ userSelect: 'none', whiteSpace: 'nowrap' }}
+                    style={{ userSelect: "none", whiteSpace: "nowrap" }}
                   >
                     <span>
                       <BsPersonCircle style={iconStyle} />
-                      Hello, {username.charAt(0).toUpperCase() + username.slice(1)}
+                      Hello,{" "}
+                      {username.charAt(0).toUpperCase() + username.slice(1)}
                     </span>
                   </li>
                 )}
@@ -147,7 +170,7 @@ const Header = () => {
             )}
 
             {/* Admin links */}
-          {token && role === 'ADMIN' && (
+            {token && role === "ADMIN" && (
               <>
                 <li className="nav-item">
                   <Link
@@ -177,7 +200,7 @@ const Header = () => {
                   </Link>
                 </li>
 
-                 <li className="nav-item">
+                <li className="nav-item">
                   <Link
                     to="/admin/add-vehicle"
                     className="nav-link d-flex align-items-center text-light"
@@ -186,7 +209,6 @@ const Header = () => {
                     <BsCarFrontFill style={iconStyle} /> Add Vehicle
                   </Link>
                 </li>
-
 
                 <li className="nav-item">
                   <Link
@@ -198,7 +220,6 @@ const Header = () => {
                   </Link>
                 </li>
 
-
                 <li className="nav-item">
                   <Link
                     to="/admin/bookings"
@@ -208,7 +229,6 @@ const Header = () => {
                     <BsJournalCheck style={iconStyle} /> Bookings
                   </Link>
                 </li>
-
 
                 <li className="nav-item">
                   <Link
@@ -229,7 +249,6 @@ const Header = () => {
                     <FaRupeeSign style={iconStyle} /> Payments
                   </Link>
                 </li>
-                
 
                 <li className="nav-item">
                   <Link
@@ -237,10 +256,9 @@ const Header = () => {
                     className="nav-link d-flex align-items-center text-light"
                     style={{ fontWeight: 500 }}
                   >
-                    <VscFeedback  style={iconStyle} /> Reviews
+                    <VscFeedback style={iconStyle} /> Reviews
                   </Link>
                 </li>
-
 
                 {/* Help & Support */}
                 {/* <li className="nav-item">
@@ -252,7 +270,6 @@ const Header = () => {
                     <BsQuestionCircle style={iconStyle} /> Help & Support
                   </Link>
                 </li> */}
-
 
                 <li className="nav-item">
                   <button
@@ -267,11 +284,12 @@ const Header = () => {
                 {username && (
                   <li
                     className="nav-item ms-3 fw-semibold text-light"
-                    style={{ userSelect: 'none', whiteSpace: 'nowrap' }}
+                    style={{ userSelect: "none", whiteSpace: "nowrap" }}
                   >
                     <span>
                       <BsPersonCircle style={iconStyle} />
-                      Hello, {username.charAt(0).toUpperCase() + username.slice(1)}
+                      Hello,{" "}
+                      {username.charAt(0).toUpperCase() + username.slice(1)}
                     </span>
                   </li>
                 )}
