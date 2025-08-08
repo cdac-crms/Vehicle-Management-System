@@ -17,13 +17,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/admin/company")
+@RequestMapping("/company")
 @RequiredArgsConstructor
 public class CompanyController {
 	
 	private final CompanyService companyService;
 	
-	@CrossOrigin(origins = "http://localhost:5174")
 	@PostMapping("/addCompany")
 	public ResponseEntity<?> addCompany(@RequestBody @Valid AddCompanyDto addCompanyDto )
 	{
@@ -32,13 +31,11 @@ public class CompanyController {
 	}
 
 
-	@CrossOrigin(origins = "http://localhost:5174")
 	@GetMapping("/getAllCompanies")
 	public ResponseEntity<?> getAllCompanies() {
 	    return ResponseEntity.ok(companyService.getAllCompanies());
 	}
 	
-	@CrossOrigin(origins = "http://localhost:5174")
 	@GetMapping("/getCompany/{companyId}")
 	public ResponseEntity<?> getCompanyById(@PathVariable Long companyId) {
 		return ResponseEntity.ok(companyService.getCompanyById(companyId));

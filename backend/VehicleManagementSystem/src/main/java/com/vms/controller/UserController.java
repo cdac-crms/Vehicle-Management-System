@@ -21,7 +21,6 @@ public class UserController {
 
 	private final UserService userService;
 	
-	@CrossOrigin(origins = "http://localhost:5174")
 	 @PostMapping("/registerAdmin")
 	    public ResponseEntity<?> registerUser(@RequestBody @Valid AdminRegisterRequestDto adminRegisterRequestDto) {
 	        return ResponseEntity.status(HttpStatus.CREATED)

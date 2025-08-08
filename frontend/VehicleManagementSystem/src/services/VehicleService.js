@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/admin/vehicle';
+const API_BASE_URL = 'http://localhost:8080/vehicle';
 
 // Add Vehicle
 export const addVehicle = async (formData) => {
@@ -32,7 +32,7 @@ export const getAllVehicles = async () => {
 // Get Vehicle by ID
 export const getVehicleById = async (vehicleId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/${vehicleId}`);
+    const response = await axios.get(`${API_BASE_URL}/getVehicleById/${vehicleId}`);
     console.log("Fetched vehicle:", response.data);
     return response.data;
   } catch (error) {

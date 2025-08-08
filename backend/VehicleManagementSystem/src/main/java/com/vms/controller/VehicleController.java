@@ -1,5 +1,7 @@
 package com.vms.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vms.dto.request.VehicleDashboardDto;
+import com.vms.dto.request.VehicleDetailsDto;
 import com.vms.dto.request.VehicleRequestDto;
 import com.vms.dto.response.ApiResponse;
 import com.vms.services.VariantService;
@@ -26,8 +30,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5174")
-@RequestMapping("/admin/vehicle")
+@RequestMapping("/vehicle")
 @RequiredArgsConstructor
 public class VehicleController {
 
@@ -57,7 +60,7 @@ public class VehicleController {
 			return ResponseEntity.ok(vehicleService.getAllVehicles());
 		}
 
-		@GetMapping("/{vehicleId}")
+		@GetMapping("getVehicleById/{vehicleId}")
 		public ResponseEntity<?> getVehicleById(@PathVariable Long vehicleId) {
 			return ResponseEntity.ok(vehicleService.getVehicleById(vehicleId));
 		}
@@ -86,6 +89,31 @@ public class VehicleController {
 		public ResponseEntity<?> deleteVehicle(@PathVariable Long vehicleId) {
 			return ResponseEntity.ok(vehicleService.deleteVehicle(vehicleId));
 		}
+		
+		
+		  // List and search vehicles for the dashboard
+	    @GetMapping
+	    public ResponseEntity<List<VehicleDashboardDto>> getVehicles(
+	        @RequestParam(name = "search", required = false) String search) {
+	        List<VehicleDashboardDto> result = (search == null || search.isBlank())
+	            ? vehicleService.findAllAvailableVehicles()
+	            : vehicleService.searchVehicles(search);
+	        return ResponseEntity.ok(result);
+	    }
+
+   
+	    // Get vehicle details for a card
+	    @GetMapping("/{id}")
+	    public ResponseEntity<VehicleDetailsDto> getVehicleDetails(@PathVariable Long id) {
+	        VehicleDetailsDto dto = vehicleService.findVehicleDetails(id);
+	        return ResponseEntity.ok(dto);
+	    }
+		
+		
+		
+		
+		
+		
 	
 	
 	

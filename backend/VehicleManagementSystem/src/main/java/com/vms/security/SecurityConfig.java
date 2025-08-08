@@ -29,14 +29,21 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable());
 
+        // Enable CORS so frontend can call APIs
+        http.cors();
+
         if (securityEnabled) {
             http
                 .authorizeHttpRequests(auth -> auth
+                    // Publicly accessible endpoints
                     .requestMatchers(
-                        "/api/auth/**",
-                        "/swagger-ui/**",
-                        "/v3/api-docs/**"
+                        "/",                          // Homepage
+                        "/api/auth/login",            // Login
+                        "/api/auth/register",         // Register
+                        "/swagger-ui/**",             // Swagger docs
+                        "/v3/api-docs/**"              // OpenAPI docs
                     ).permitAll()
+                    // Everything else requires authentication
                     .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -44,14 +51,11 @@ public class SecurityConfig {
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         } else {
-            // Security is disabled — allow all
+            // Security disabled — allow all
             http
                 .authorizeHttpRequests(auth -> auth
                     .anyRequest().permitAll()
                 );
-            
-            http.securityMatcher("/**").securityContext(context -> context.disable());
-
         }
 
         return http.build();
