@@ -17,13 +17,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/admin/variant")
+@RequestMapping("/variant")
 @RequiredArgsConstructor
 public class VariantController {
 
 	private final VariantService variantService;
 	
-	@CrossOrigin(origins = "http://localhost:5174")
 	@PostMapping("/addVariant")
 	public ResponseEntity<?> addVariant(@RequestBody @Valid AddVariantDto addVariantDto )
 	{
@@ -31,14 +30,12 @@ public class VariantController {
 				.body(variantService.addVariant(addVariantDto));
 	}
 	
-	@CrossOrigin(origins = "http://localhost:5174")
 	  @GetMapping("/getAllVariants")
 	    public ResponseEntity<?> getAllVariants() {
 	        return ResponseEntity.ok(variantService.getAllVariants());
 	    }
 	  
 	  
-	@CrossOrigin(origins = "http://localhost:5174")
 	    @GetMapping("/getVariant/{variantId}")
 	    public ResponseEntity<?> getVariantById(@PathVariable Long variantId) {
 	        return ResponseEntity.ok(variantService.getVariantById(variantId));

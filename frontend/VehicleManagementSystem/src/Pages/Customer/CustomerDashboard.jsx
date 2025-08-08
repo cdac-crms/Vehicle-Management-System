@@ -44,8 +44,8 @@ const CustomerDashboard = () => {
         return;
       }
       const url = searchTerm
-        ? `http://localhost:8080/vehicles?search=${encodeURIComponent(searchTerm)}`
-        : `http://localhost:8080/vehicles`;
+        ? `http://localhost:8080/vehicle?search=${encodeURIComponent(searchTerm)}`
+        : `http://localhost:8080/vehicle`;
 
       const response = await axios.get(url, {
         headers: {

@@ -11,7 +11,6 @@ import com.vms.services.AuthenticationsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(origins = "http://localhost:5174")
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
