@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.crms.dto.request.DrivingLicenseRequest;
-import com.crms.dto.response.DrivingLicenseResponse;
-import com.crms.service.DrivingLicenseService;
+import com.vms.dto.request.DrivingLicenseRequest;
+import com.vms.dto.response.DrivingLicenseResponse;
+import com.vms.services.DrivingLicenseService;
 
 import io.swagger.v3.oas.annotations.Parameter;
 
