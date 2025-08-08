@@ -1,55 +1,125 @@
 import React, { useState, useEffect } from "react";
 import { Spinner, Alert } from "react-bootstrap";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const NAVY = "#112266";
+const PAYMENT_METHODS = ["CARD", "UPI", "NETBANKING", "CASH"];
 
-const demoPayment = {
-  amount: 1200
-};
+export default function PaymentPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
 
-const PaymentPage = () => {
-  const [cardName, setCardName] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [validity, setValidity] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [amount, setAmount] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error] = useState("");
+  // Destructure navigation state; userId must be included in location.state!
+  const {
+    bookingId,
+    carName,
+    variant,
+    startDate,
+    endDate,
+    totalDays,
+    amount,
+    userId
+  } = location.state || {};
 
-  // Simulate backend fetch
+  const [finalAmount, setFinalAmount] = useState(amount || null);
+  const [loading, setLoading] = useState(!amount || !bookingId || !userId);
+  const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [method, setMethod] = useState(PAYMENT_METHODS[0]);
+
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setAmount(demoPayment.amount);
+    if (!amount || !bookingId || !userId) {
+      setError("Cannot process payment: No booking/payment data found.");
+      setTimeout(() => {
+        navigate("/customer/my-bookings");
+      }, 2000);
+    } else {
+      setFinalAmount(amount);
       setLoading(false);
-    }, 600);
-  }, []);
+    }
+  }, [amount, bookingId, userId, navigate]);
 
-  // Handle form submit
-  const handleSubmit = (e) => {
+  const handleShowForm = () => setShowForm(true);
+
+  const handlePayment = async (e) => {
     e.preventDefault();
-    alert("Payment submitted! (frontend demo)");
+    setError("");
+    setLoading(true);
+    try {
+      // Use exact backend path
+      const response = await fetch("http://localhost:8080/customer/payments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookingId,
+          amount: finalAmount,
+          paymentMethod: method,
+          userId, // ⚠️ Include if and only if your backend requires it in request!
+        })
+      });
+
+      setLoading(false);
+
+      let apiResp = null;
+      try { apiResp = await response.json(); } catch { }
+      // Controller: PaymentResponseDto (success), ApiResponse (error). 
+      // If you are returning PaymentResponseDto on success (best!), use
+      // `if (response.ok && apiResp && apiResp.paymentId)`
+      // If you are returning ApiResponse { success: true }
+      if (response.ok && (apiResp?.success || apiResp?.paymentId)) {
+        // Show message from backend or fallback
+        alert(apiResp?.message || "Payment recorded successfully!");
+        navigate("/customer/my-bookings");
+      } else {
+        // Prefer error message from API
+        setError(apiResp?.message || "Payment failed to record.");
+      }
+    } catch (err) {
+      setLoading(false);
+      setError(err.message || "Payment failed to record.");
+    }
+  };
+
+  const tableStyle = {
+    width: "100%",
+    borderCollapse: "collapse",
+    marginBottom: "1.4rem"
+  };
+  const tdLabelStyle = {
+    border: "none",
+    padding: "0.45em 0.2em 0.45em 0.8em",
+    fontSize: "1.18rem",
+    color: "#21346d",
+    fontWeight: "bold",
+    minWidth: 102,
+    textAlign: "right",
+    verticalAlign: "middle",
+    letterSpacing: "0.01em"
+  };
+  const tdValueStyle = {
+    border: "none",
+    padding: "0.45em 0.25em",
+    fontSize: "1.19rem",
+    color: "#26324a",
+    fontWeight: 500,
+    textAlign: "left",
+    minWidth: 135,
+    verticalAlign: "middle"
   };
 
   return (
     <div className="container py-5">
       <div
         className="card shadow-sm mx-auto"
-        style={{
-          maxWidth: 400,
-          borderRadius: 14,
-          border: "none",
-          background: "#fff",
-        }}
+        style={{ maxWidth: 430, borderRadius: 14, border: "none", background: "#fff" }}
       >
         <div className="card-body p-4">
           <h4
             className="fw-bold text-center mb-4"
-            style={{ color: NAVY, fontSize: "1.6rem", letterSpacing: ".01em" }}
+            style={{ color: NAVY, fontSize: "1.7rem", letterSpacing: ".01em" }}
           >
             Payment Details
           </h4>
-
           {loading ? (
             <div className="d-flex justify-content-center py-5">
               <Spinner animation="border" variant="primary" />
@@ -59,120 +129,94 @@ const PaymentPage = () => {
               {error}
             </Alert>
           ) : (
-            <form onSubmit={handleSubmit} autoComplete="off">
-              <div className="row align-items-center mb-3">
-                <div className="col-5 text-end fw-semibold" style={{ color: "#27314b" }}>
-                  Name on Card:
-                </div>
-                <div className="col-7">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Enter name"
-                    value={cardName}
-                    onChange={(e) => setCardName(e.target.value)}
-                    required
-                    style={{ borderRadius: 7 }}
-                  />
-                </div>
-              </div>
-              <div className="row align-items-center mb-3">
-                <div className="col-5 text-end fw-semibold" style={{ color: "#27314b" }}>
-                  Card Number:
-                </div>
-                <div className="col-7">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Card number"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                    pattern="\d{12,19}"
-                    maxLength={19}
-                    required
-                    inputMode="numeric"
-                    style={{ borderRadius: 7 }}
-                  />
-                </div>
-              </div>
-
-              {/* Validity row */}
-              <div className="row align-items-center mb-3">
-                <div className="col-5 text-end fw-semibold" style={{ color: "#27314b" }}>
-                  Validity:
-                </div>
-                <div className="col-7">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="DD/MM/YYYY"
-                    value={validity}
-                    onChange={e => {
-                      // Allow only numbers and slashes, enforce format
-                      let val = e.target.value;
-                      // Remove non-numeric except slash
-                      val = val.replace(/[^\d/]/g, "");
-                      // Auto-insert slashes for DD/MM/YYYY
-                      if (val.length === 2 || val.length === 5) {
-                        if (validity.length < val.length) val += "/";
-                      }
-                      // Max 10 chars (DD/MM/YYYY)
-                      if (val.length > 10) val = val.slice(0, 10);
-                      setValidity(val);
-                    }}
-                    maxLength={10}
-                    pattern="\d{2}/\d{2}/\d{4}"
-                    required
-                    style={{ borderRadius: 7 }}
-                  />
-                </div>
-              </div>
-
-              {/* CVV row */}
-              <div className="row align-items-center mb-4">
-                <div className="col-5 text-end fw-semibold" style={{ color: "#27314b" }}>
-                  CVV:
-                </div>
-                <div className="col-7">
-                  <input
-                    type="password"
-                    inputMode="numeric"
-                    pattern="\d{3}"
-                    maxLength={3}
-                    className="form-control"
-                    placeholder="CVV"
-                    value={cvv}
-                    onChange={(e) =>
-                      setCvv(e.target.value.replace(/\D/, ""))
-                    }
-                    required
-                    style={{ borderRadius: 7 }}
-                  />
-                </div>
-              </div>
-
-              {/* Pay Button */}
-              <button
-                type="submit"
-                className="btn btn-primary w-100 fw-semibold mb-1"
-                style={{
-                  background: NAVY,
-                  fontSize: "1.09rem",
-                  border: "none",
-                  borderRadius: 7,
-                  height: 46,
-                  letterSpacing: ".01em"
-                }}
-                disabled={loading || !amount}
+            <div>
+              <table style={tableStyle}>
+                <tbody>
+                  {carName && (
+                    <tr>
+                      <td style={tdLabelStyle}>Car : </td>
+                      <td style={tdValueStyle}>{carName}</td>
+                    </tr>
+                  )}
+                  {variant && (
+                    <tr>
+                      <td style={tdLabelStyle}>Variant : </td>
+                      <td style={tdValueStyle}>{variant}</td>
+                    </tr>
+                  )}
+                  {startDate && (
+                    <tr>
+                      <td style={tdLabelStyle}>From : </td>
+                      <td style={tdValueStyle}>{startDate}</td>
+                    </tr>
+                  )}
+                  {endDate && (
+                    <tr>
+                      <td style={tdLabelStyle}>To : </td>
+                      <td style={tdValueStyle}>{endDate}</td>
+                    </tr>
+                  )}
+                  {typeof totalDays !== "undefined" && (
+                    <tr>
+                      <td style={tdLabelStyle}>Total Days : </td>
+                      <td style={tdValueStyle}>{totalDays}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+              <div
+                className="fs-4 mb-4 text-center"
+                style={{ color: NAVY, letterSpacing: ".03em", fontWeight: 600 }}
               >
-                Pay {amount ? `₹${amount}` : ""}
-              </button>
-            </form>
+                Payable amount : <span className="fw-bold">₹{finalAmount}</span>
+              </div>
+              {showForm ? (
+                <form onSubmit={handlePayment}>
+                  <div className="mb-3">
+                    <label className="form-label">Payment Method</label>
+                    <select
+                      className="form-select"
+                      value={method}
+                      onChange={e => setMethod(e.target.value)}
+                      disabled={loading}
+                    >
+                      {PAYMENT_METHODS.map(methodOpt => (
+                        <option key={methodOpt} value={methodOpt}>
+                          {methodOpt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    type="submit"
+                    className="btn btn-success w-100"
+                    style={{ background: NAVY, border: "none" }}
+                    disabled={loading}
+                  >
+                    {loading ? "Processing..." : "Submit Payment"}
+                  </button>
+                </form>
+              ) : (
+                <button
+                  className="btn btn-primary w-100 fw-semibold"
+                  style={{
+                    background: NAVY,
+                    fontSize: "1.18rem",
+                    border: "none",
+                    borderRadius: 7,
+                    height: 48,
+                    letterSpacing: ".01em"
+                  }}
+                  onClick={handleShowForm}
+                  disabled={loading || !finalAmount}
+                >
+                  Pay
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
     </div>
   );
-};
-
-export default PaymentPage;
+}
