@@ -111,9 +111,7 @@ const UserLoginForm = () => {
           <div className="mb-4">
             <label className="form-label fw-semibold d-flex justify-content-between">
               <span>Password</span>
-              <Link to="/forgot-password" className="small text-decoration-none text-primary">
-                Forgot Password?
-              </Link>
+            
             </label>
             <input
               name="password"

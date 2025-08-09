@@ -38,7 +38,6 @@ import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/customer/booking")
-//@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @AllArgsConstructor
 public class CustomerBookingController {
 	

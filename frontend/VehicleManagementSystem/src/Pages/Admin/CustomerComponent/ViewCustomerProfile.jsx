@@ -1,30 +1,68 @@
-import React from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getCustomerById } from "../../../services/CustomerService";
 
 const ViewCustomerProfile = () => {
   const { id } = useParams();
-  const { state: customer } = useLocation();
+  const navigate = useNavigate();
 
-  if (!customer) {
+  const [customer, setCustomer] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCustomer = async () => {
+      setLoading(true);
+      try {
+        const customerData = await getCustomerById(id);
+        if (customerData) {
+          setCustomer(customerData);
+        } else {
+          setError("Customer not found.");
+        }
+      } catch (err) {
+        setError("Error fetching customer data.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCustomer();
+  }, [id]);
+
+  if (loading) {
     return (
-      <div className="container mt-5 text-center" style={{ fontFamily: 'Segoe UI' }}>
-        <h5 className="text-danger">Customer data not available.</h5>
-        <p>Try visiting this page through the customer list.</p>
+      <div className="container mt-5 text-center">
+        <h5>Loading customer details...</h5>
       </div>
     );
   }
 
-  const navigate = useNavigate();
+  if (error) {
+    return (
+      <div className="container mt-5 text-center text-danger">
+        <h5>{error}</h5>
+        <p>Try going back to the customer list.</p>
+      </div>
+    );
+  }
+
+  if (!customer) {
+    return null;
+  }
 
   return (
-    <div className="container mt-5" style={{ fontFamily: 'Segoe UI' }}>
+    <div className="container mt-4" style={{ fontFamily: 'Segoe UI' }}>
       <h2 className="text-center mb-4" style={{ color: '#102649' }}>
-        Customer Profile (ID: {id})
+        Customer Profile
       </h2>
 
       <div className="row justify-content-center">
-        <div className="col-md-8">
-          <div className="card p-4 shadow" style={{ border: '1px solid #102649' }}>
+        <div className="col-md-6">
+          <div 
+            className="card p-4 shadow text-center d-flex align-items-center" 
+            style={{ border: '1px solid #102649' }}
+          >
             <h4 className="mb-3" style={{ color: '#102649' }}>
               {customer.firstName} {customer.lastName}
             </h4>
@@ -37,25 +75,27 @@ const ViewCustomerProfile = () => {
               <img
                 src={customer.licenseImage}
                 alt="Driving License"
-                className="img-fluid rounded border"
-                style={{ maxHeight: '400px' }}
+                className="img-fluid rounded border mb-3"
+                style={{ maxHeight: '250px', maxWidth: '300px' }}
               />
             ) : (
               <p className="text-muted">No driving license image available.</p>
             )}
+
+            <p><strong>License Number:</strong> {customer.licenseNumber || "Not Provided"}</p>
+            <p><strong>License Expiry Date:</strong> {customer.expiryDate || "Not Provided"}</p>
           </div>
         </div>
       </div>
 
-
       <div className="mt-4 text-center" style={{ color: '#102649' }}>
-          <button
-            className="btn"
-            onClick={() => navigate(-1)}
-            style={{ fontWeight: '600' }}
-          >
-            ← Back to Customers
-          </button>
+        <button
+          className="btn"
+          onClick={() => navigate(-1)}
+          style={{ fontWeight: '600' }}
+        >
+          ← Back to Customers
+        </button>
       </div>
     </div>
   );

@@ -25,7 +25,7 @@ export const getAllCustomers = async () => {
 export const getCustomerById = async (customerId) => {
   try {
     const token = getAuthToken();
-    const response = await axios.get(`${API_BASE_URL}/getCustomerById/${customerId}`, {
+    const response = await axios.get(`${API_BASE_URL}/${customerId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

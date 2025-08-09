@@ -106,7 +106,7 @@ const Header = () => {
                     style={{ fontWeight: 500 }}
                   >
                     <MdDashboard />
-                    Dashboard
+                    Browse Vehicles
                   </Link>
                 </li>
                 <li className="nav-item">

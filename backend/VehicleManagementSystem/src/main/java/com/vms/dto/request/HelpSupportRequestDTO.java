@@ -12,6 +12,6 @@ public class HelpSupportRequestDTO {
     private String email;
     private String concernType;
     private String message;
-    private Long userId; // Can be omitted if you take the user from session/security context
+    private Long userId; 
 
 }

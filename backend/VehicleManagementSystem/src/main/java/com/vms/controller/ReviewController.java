@@ -4,6 +4,8 @@ package com.vms.controller;
 import com.vms.dto.request.ReviewRequest;
 import com.vms.dto.response.CustomerApiResponse;
 import com.vms.dto.response.GetAllReviewsDto;
+import com.vms.dto.response.GetReviewsByVehicleDto;
+import com.vms.entities.Review;
 import com.vms.services.ReviewService;
 
 import lombok.RequiredArgsConstructor;
@@ -34,4 +36,12 @@ public class ReviewController {
     public ResponseEntity<List<GetAllReviewsDto>> getAllReviews() {
         return ResponseEntity.ok(reviewService.getAllReviews());
     }
+    
+    
+    @GetMapping("/vehicle/{vehicleId}")
+    public ResponseEntity<List<GetReviewsByVehicleDto>> getReviewsByVehicleId(@PathVariable Long vehicleId) {
+        List<GetReviewsByVehicleDto> reviews = reviewService.getReviewsByVehicleId(vehicleId);
+        return ResponseEntity.ok(reviews);
+    }
+
 }
