@@ -64,7 +64,7 @@ public class DrivingLicenseServiceImpl implements DrivingLicenseService{
 
    
     
-    public DrivingLicenseResponse updateLicense(Long licenseId, DrivingLicenseRequest licenseRequest, MultipartFile imageFile) throws IOException {
+    public DrivingLicenseResponse updateLicense(Long licenseId, DrivingLicenseRequest licenseRequest, MultipartFile file) throws IOException {
         // Fetch existing license entity
         DrivingLicense license = drivingLicenseDao.findById(licenseId)
             .orElseThrow(() -> new RuntimeException("License not found"));
@@ -83,8 +83,8 @@ public class DrivingLicenseServiceImpl implements DrivingLicenseService{
         }
 
         // If new image provided, upload to Cloudinary & update
-        if (imageFile != null && !imageFile.isEmpty()) {
-            String imageUrl = cloudinaryService.uploadFile(imageFile);
+        if (file != null && !file.isEmpty()) {
+            String imageUrl = cloudinaryService.uploadFile(file);
 			license.setLicenseImage(imageUrl);
         }
 
