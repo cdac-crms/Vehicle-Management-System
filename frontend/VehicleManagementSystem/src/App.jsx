@@ -1,7 +1,6 @@
-
-
 import { Route, Routes } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+
 import HomePage from "./Pages/Home/HomePage";
 import Header from "./Components/Navbar/Header";
 import UserLoginForm from "./Pages/Login/UserLoginForm";
@@ -12,14 +11,6 @@ import AddCompanyForm from "./Pages/Admin/AddCompanyForm";
 import AddVariantForm from "./Pages/Admin/AddVariantForm";
 import AddVehicleForm from "./Pages/Admin/VehicleComponent/AddVehicleForm";
 import ViewAllVehicles from "./Pages/Admin/VehicleComponent/ViewAllVehicles";
-import CustomerDashboard from './Pages/Customer/CustomerDashboard';
-import CarDetailsPage from './Pages/Customer/CarDetailsPage';
-import BookingDetailsPage from './Pages/Customer/BookingDetailsPage';
-import MyBookingsPage from './Pages/Customer/MyBookingsPage';
-import UpdateProfilePage from './Pages/Customer/UpdateProfilePage';
-import MyProfilePage from './Pages/Customer/MyProfilePage';
-import PaymentPage from './Pages/Customer/PaymentPage';
-import HelpSupport from "./Pages/Customer/HelpSupport";
 import ViewAllCustomers from "./Pages/Admin/CustomerComponent/ViewAllCustomers";
 import ViewCustomerBooking from "./Pages/Admin/BookingComponent/ViewCustomerBooking";
 import UpdateVehicleForm from "./Pages/Admin/VehicleComponent/UpdateVehicleForm";
@@ -29,48 +20,80 @@ import ViewCustomerProfile from "./Pages/Admin/CustomerComponent/ViewCustomerPro
 import PaymentSummary from "./Pages/Admin/BookingComponent/PaymentSummary";
 import ViewReview from "./Pages/Admin/BookingComponent/ViewReview";
 
+import CustomerDashboard from './Pages/Customer/CustomerDashboard';
+import CarDetailsPage from './Pages/Customer/CarDetailsPage';
+import BookingDetailsPage from './Pages/Customer/BookingDetailsPage';
+import MyBookingsPage from './Pages/Customer/MyBookingsPage';
+import UpdateProfilePage from './Pages/Customer/UpdateProfilePage';
+import MyProfilePage from './Pages/Customer/MyProfilePage';
+import PaymentPage from './Pages/Customer/PaymentPage';
+import HelpSupport from "./Pages/Customer/HelpSupport";
 
+import ProtectedRoute from "./Components/ProtectedRoute";
+
+const adminRoutes = [
+  { path: "/admin/register", element: <AdminRegisterForm /> },
+  { path: "/admin/add-company", element: <AddCompanyForm /> },
+  { path: "/admin/add-variant", element: <AddVariantForm /> },
+  { path: "/admin/add-vehicle", element: <AddVehicleForm /> },
+  { path: "/admin/vehicles", element: <ViewAllVehicles /> },
+  { path: "/admin/view-customers", element: <ViewAllCustomers /> },
+  { path: "/admin/bookings", element: <ViewCustomerBooking /> },
+  { path: "/admin/view-booking/:id", element: <ViewBookingDetails /> },
+  { path: "/admin/update-vehicle/:vehicleId", element: <UpdateVehicleForm /> },
+  { path: "/admin/view-vehicle/:id", element: <VehicleDetails /> },
+  { path: "/admin/customer/:id", element: <ViewCustomerProfile /> },
+  { path: "/admin/view-payments", element: <PaymentSummary /> },
+  { path: "/admin/view-reviews", element: <ViewReview /> },
+];
+
+const customerRoutes = [
+  { path: "/customer/customer-dashboard", element: <CustomerDashboard /> },
+  { path: "/customer/car-details/:id", element: <CarDetailsPage /> },
+  { path: "/customer/booking-details/:id", element: <BookingDetailsPage /> },
+  { path: "/customer/my-bookings", element: <MyBookingsPage /> },
+  { path: "/customer/update-profile", element: <UpdateProfilePage /> },
+  { path: "/customer/my-profile", element: <MyProfilePage /> },
+  { path: "/customer/payment/:id", element: <PaymentPage /> },
+  { path: "/customer/help-support", element: <HelpSupport /> },
+];
 
 function App() {
   return (
     <div>
-       
-      <Header></Header>
-      
+      <Header />
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<UserLoginForm />} />
         <Route path="/register" element={<UserRegister />} />
 
-        <Route path="/admin/register" element={<AdminRegisterForm />} />
-        <Route path="/admin/add-company" element={<AddCompanyForm />} />
-        <Route path="/admin/add-variant" element={<AddVariantForm />} />
-        <Route path="/admin/add-vehicle" element={<AddVehicleForm />} />
-        <Route path="/admin/vehicles" element={<ViewAllVehicles />} />
-        <Route path="/admin/view-customers" element={<ViewAllCustomers />} />
-        <Route path="/admin/bookings" element={<ViewCustomerBooking/>} />
-        <Route path="/admin/view-booking/:id" element={<ViewBookingDetails />} />
-        <Route path="/admin/update-vehicle/:vehicleId" element={<UpdateVehicleForm />} />
-        <Route path="/admin/view-vehicle/:id" element={<VehicleDetails />} />
-        <Route path="/admin/customer/:id" element={<ViewCustomerProfile />} />
-        <Route path="/admin/view-payments" element={<PaymentSummary />} />
-        <Route path="/admin/view-reviews" element={<ViewReview />} />
-      
+        {/* Admin Routes */}
+        {adminRoutes.map(({ path, element }) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <ProtectedRoute allowedRole="ADMIN">
+                {element}
+              </ProtectedRoute>
+            }
+          />
+        ))}
 
-
-        <Route path="/customer/customer-dashboard" element={<CustomerDashboard />} />
-        <Route path="/customer/car-details/:id" element={<CarDetailsPage />} />
-        <Route path="/customer/booking-details/:id" element={<BookingDetailsPage />} />
-        <Route path="/customer/my-bookings" element={<MyBookingsPage />} />
-        <Route path="/customer/update-profile" element={<UpdateProfilePage />} />
-        <Route path="/customer/my-profile" element={<MyProfilePage />} />
-        <Route path="/customer/payment/:id" element={<PaymentPage />} />
-        <Route path="/customer/help-support" element={<HelpSupport />} />
-        
-
-
+        {/* Customer Routes */}
+        {customerRoutes.map(({ path, element }) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <ProtectedRoute allowedRole="CUSTOMER">
+                {element}
+              </ProtectedRoute>
+            }
+          />
+        ))}
       </Routes>
-      
     </div>
   );
 }

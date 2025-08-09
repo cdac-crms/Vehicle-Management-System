@@ -19,6 +19,7 @@ public class OneBookingDto {
     private String fuelType;
     private double pricePerDay;
     private String registrationNumber;
+    private String image;
 
     // Booking Info
     private Long bookingId;

@@ -207,27 +207,69 @@ public class BookingServiceImpl implements BookingService {
 //    }
     
     
+//    yash
+//    
+//    @Override
+//    public OneBookingDto getBookingById(Long id) {
+//        Booking booking = bookingDao.findFullBookingById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("Booking ID not found: " + id));
+//
+//        User user = booking.getUser();
+//        DrivingLicense license = user.getDrivingLicense();
+//        
+//        //debug
+//        System.out.println("FuelType: " + booking.getVehicle().getVariant().getFuelType());
+//        System.out.println("Email: " + user.getEmail());
+//        System.out.println("ContactNo: " + user.getContactNo());
+//
+//        return OneBookingDto.builder()
+//                .name(booking.getVehicle().getVariant().getName())
+//                .companyName(booking.getVehicle().getVariant().getCompany().getName())
+//                //.fuelType(booking.getVehicle().getVariant().getFuelType().name())
+//                .fuelType(booking.getVehicle().getVariant().getFuelType().name())
+//                .pricePerDay(booking.getVehicle().getPricePerDay().doubleValue())
+//                .registrationNumber(booking.getVehicle().getRegistrationNumber())
+//
+//                .bookingId(booking.getId())
+//                .bookingDate(booking.getBookingDate())
+//                .startDate(booking.getStartDate())
+//                .endDate(booking.getEndDate())
+//                .totalAmount(booking.getTotalAmount().doubleValue())
+//                .bookingStatus(booking.getBookingStatus())
+//
+//                .firstName(user.getFirstName())
+//                .lastName(user.getLastName())
+//                .email(user.getEmail())
+//                .contactNo(user.getContactNo())
+//
+//                .licenseNumber(license.getLicenseNumber())
+//                .expiryDate(license.getExpiryDate())
+//                .licenseImage(license.getLicenseImage())
+//                .build();
+//    }
+//
+//  
+    
+    
     @Override
     public OneBookingDto getBookingById(Long id) {
         Booking booking = bookingDao.findFullBookingById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking ID not found: " + id));
 
         User user = booking.getUser();
-        DrivingLicense license = user.getDrivingLicense();
-        
-        //debug
-        System.out.println("FuelType: " + booking.getVehicle().getVariant().getFuelType());
-        System.out.println("Email: " + user.getEmail());
-        System.out.println("ContactNo: " + user.getContactNo());
+        DrivingLicense license = user.getDrivingLicense();  // can be null
+        // Payment may also be null if needed
 
         return OneBookingDto.builder()
+                // Vehicle info
                 .name(booking.getVehicle().getVariant().getName())
                 .companyName(booking.getVehicle().getVariant().getCompany().getName())
-                //.fuelType(booking.getVehicle().getVariant().getFuelType().name())
                 .fuelType(booking.getVehicle().getVariant().getFuelType().name())
                 .pricePerDay(booking.getVehicle().getPricePerDay().doubleValue())
                 .registrationNumber(booking.getVehicle().getRegistrationNumber())
+                .image(booking.getVehicle().getImage())
 
+                // Booking info
                 .bookingId(booking.getId())
                 .bookingDate(booking.getBookingDate())
                 .startDate(booking.getStartDate())
@@ -235,14 +277,16 @@ public class BookingServiceImpl implements BookingService {
                 .totalAmount(booking.getTotalAmount().doubleValue())
                 .bookingStatus(booking.getBookingStatus())
 
+                // Customer info
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .contactNo(user.getContactNo())
 
-                .licenseNumber(license.getLicenseNumber())
-                .expiryDate(license.getExpiryDate())
-                .licenseImage(license.getLicenseImage())
+                // Driving License info (nullable)
+                .licenseNumber(license != null ? license.getLicenseNumber() : null)
+                .expiryDate(license != null ? license.getExpiryDate() : null)
+                .licenseImage(license != null ? license.getLicenseImage() : null)
                 .build();
     }
 
