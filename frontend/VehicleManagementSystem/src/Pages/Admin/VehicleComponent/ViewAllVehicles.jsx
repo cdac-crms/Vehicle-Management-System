@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllVehicles } from "../../../services/VehicleService";
+import { getAllVehicles , deleteVehicle} from "../../../services/VehicleService";
 
 const ViewAllVehicles = () => {
   const [vehicles, setVehicles] = useState([]);
@@ -20,9 +20,24 @@ const ViewAllVehicles = () => {
       setVehicles([]);
     }
   };
+  
+    const handleDelete = async(id) =>{
+    const confirmDelete = window.confirm("Are you sure you want to delete this vehicle?");
+      if (!confirmDelete) return; // if user clicks cancel, do nothing
+
+      try {
+        await deleteVehicle(id);
+        setVehicles((prev) => prev.filter((vehicle) => vehicle.id !== id));
+        alert("Vehicle deleted successfully.");
+      } catch (error) {
+        console.error("Error deleting vehicle:", error);
+        alert("Failed to delete vehicle. Please try again.");
+      } 
+    }
+
+
 
   const handleUpdate = (id) => navigate(`/admin/update-vehicle/${id}`);
-  const handleDelete = (id) => alert(`Mock delete vehicle ID: ${id}`);
   const handleViewDetails = (vehicle) =>
     navigate(`/admin/view-vehicle/${vehicle.id}`, { state: vehicle });
 

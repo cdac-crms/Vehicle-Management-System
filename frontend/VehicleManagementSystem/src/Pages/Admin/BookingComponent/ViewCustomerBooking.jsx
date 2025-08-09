@@ -22,6 +22,7 @@ const ViewCustomerBooking = () => {
   };
 
   const handleViewDetails = (booking) => {
+    console.log(booking)
     navigate(`/admin/view-booking/${booking.id}`, { state: booking });
   };
 

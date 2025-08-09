@@ -26,6 +26,7 @@ export const getBookingById = async (bookingId) => {
     const response = await axios.get(`${API_BASE_URL}/getBooking/${bookingId}`, {
       headers: getAuthHeaders(),
     });
+    console.log(response)
     return response.data;
   } catch (error) {
     console.error("Error fetching booking:", error.response?.data?.message || error.message);

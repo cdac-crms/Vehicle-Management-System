@@ -30,18 +30,33 @@ public interface BookingDao extends JpaRepository<Booking, Long>{
 		    @Param("endDate") LocalDate endDate,
 		    @Param("statuses") List<BookingStatus> statuses
 		);
-	@Query("""
-		    SELECT b FROM Booking b
-		    JOIN FETCH b.vehicle v
-		    JOIN FETCH v.variant var
-		    JOIN FETCH var.company c
-		    JOIN FETCH b.user u
-		    JOIN FETCH u.drivingLicense dl
-		    LEFT JOIN FETCH b.payment p
-		    WHERE b.id = :bookingId
-		""")
-		Optional<Booking> findFullBookingById(@Param("bookingId") Long bookingId);
+//	yash code
+//	@Query("""
+//		    SELECT b FROM Booking b
+//		    JOIN FETCH b.vehicle v
+//		    JOIN FETCH v.variant var
+//		    JOIN FETCH var.company c
+//		    JOIN FETCH b.user u
+//		    JOIN FETCH u.drivingLicense dl
+//		    LEFT JOIN FETCH b.payment p
+//		    WHERE b.id = :bookingId
+//		""")
+//		Optional<Booking> findFullBookingById(@Param("bookingId") Long bookingId);
+
+	// BookingDao.java
 
 	
+	@Query("""
+	    SELECT b FROM Booking b
+	    JOIN FETCH b.vehicle v
+	    JOIN FETCH v.variant var
+	    JOIN FETCH var.company c
+	    JOIN FETCH b.user u
+	    LEFT JOIN FETCH u.drivingLicense dl
+	    LEFT JOIN FETCH b.payment p
+	    WHERE b.id = :bookingId
+	""")
+	Optional<Booking> findFullBookingById(@Param("bookingId") Long bookingId);
+
 	
 }
