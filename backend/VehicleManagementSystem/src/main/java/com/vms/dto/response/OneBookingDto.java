@@ -15,8 +15,8 @@ public class OneBookingDto {
 
     // Vehicle Info
     private String name;
-   // private String companyName;
-    private FuelType fuelType;
+    private String companyName;
+    private String fuelType;
     private double pricePerDay;
     private String registrationNumber;
 

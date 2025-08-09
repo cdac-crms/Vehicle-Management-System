@@ -31,18 +31,18 @@ const ViewBookingDetails = () => {
 
         <div className="col-md-4 mb-3">
           <div className="card h-100 shadow-sm p-3">
-            <h5 className="mb-3">Vehicle Info</h5>
+            <h5 className="mb-3  text-center">Vehicle Info</h5>
+            {/* <p>
+              <strong>Company:</strong> {booking.companyName}
+            </p> */}
             <p>
-              <strong>Company:</strong> {booking.company}
-            </p>
-            <p>
-              <strong>Model:</strong> {booking.variant}
+              <strong>Model:</strong> {booking.name}
             </p>
             <p>
               <strong>Fuel Type:</strong> {booking.fuelType}
             </p>
             <p>
-              <strong>Rent/Day:</strong> ₹{booking.rentPerDay}
+              <strong>Rent/Day:</strong> ₹{booking.pricePerDay}
             </p>
             <p>
               <strong>Reg. Number:</strong> {booking.registrationNumber}
@@ -52,12 +52,12 @@ const ViewBookingDetails = () => {
 
         <div className="col-md-4 mb-3">
           <div className="card h-100 shadow-sm p-3">
-            <h5 className="mb-3">Booking Info</h5>
+            <h5 className="mb-3  text-center">Booking Info</h5>
             <p>
               <strong>Booking ID:</strong> {id}
             </p>
             <p>
-              <strong>Booked At:</strong> {booking.bookingTime}
+              <strong>Booked At:</strong> {booking.bookingDate}
             </p>
             <p>
               <strong>From:</strong> {booking.startDate}
@@ -85,12 +85,12 @@ const ViewBookingDetails = () => {
       <div className="row mb-4">
         <div className="col-md-4 mb-3">
           <div className="card h-100 shadow-sm p-3">
-            <h5 className="mb-3">Customer Info</h5>
+            <h5 className="mb-3  text-center">Customer Info</h5>
             <p>
               <strong>Name:</strong> {booking.customerName}
             </p>
             <p>
-              <strong>Contact:</strong> {booking.contactNumber}
+              <strong>Contact:</strong> {booking.contactNo}
             </p>
             <p>
               <strong>Email:</strong> {booking.email}
@@ -100,9 +100,9 @@ const ViewBookingDetails = () => {
 
         <div className="col-md-4 mb-3">
           <div className="card h-100 shadow-sm p-3">
-            <h5 className="mb-3">Driving Licence</h5>
+            <h5 className="mb-3 ">Driving Licence</h5>
             <p>
-              <strong>DL Number:</strong> {booking.dlNumber}
+              <strong>DL Number:</strong> {booking.licenseNumber}
             </p>
             <p>
               <strong>Expiry Date::</strong> {booking.expiryDate}
@@ -110,7 +110,7 @@ const ViewBookingDetails = () => {
             <div className="mt-2">
               <img
                 src={
-                  booking.dlImage ||
+                  booking.licenseImage ||
                   "https://via.placeholder.com/250x150?text=DL+Image"
                 }
                 alt="Driving Licence"
@@ -125,7 +125,7 @@ const ViewBookingDetails = () => {
             <div>
               <h5 className="mb-3">Booking Status</h5>
               <p>
-                <strong>Status:</strong> {booking.paymentStatus}
+                <strong>Status:</strong> {booking.bookingStatus}
               </p>
               {/* <p>
                 <strong>Transaction Time:</strong> {booking.transactionTime}
