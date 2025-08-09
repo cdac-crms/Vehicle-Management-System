@@ -63,30 +63,34 @@ public class DrivingLicenseServiceImpl implements DrivingLicenseService{
     }
 
    
+    
     public DrivingLicenseResponse updateLicense(Long licenseId, DrivingLicenseRequest licenseRequest, MultipartFile imageFile) throws IOException {
         // Fetch existing license entity
         DrivingLicense license = drivingLicenseDao.findById(licenseId)
             .orElseThrow(() -> new RuntimeException("License not found"));
 
         // Partial update: set only fields present (manual to avoid accidental null overwrite)
-        if (licenseRequest.getLicenseNumber() != null && !licenseRequest.getLicenseNumber().isEmpty()) {
-            license.setLicenseNumber(Long.parseLong(licenseRequest.getLicenseNumber()));
+        if (licenseRequest.getLicenseNumber() != null && !licenseRequest.getLicenseNumber().trim().isEmpty()) {
+            try {
+                license.setLicenseNumber(Long.parseLong(licenseRequest.getLicenseNumber().trim()));
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("Invalid license number format");
+            }
         }
 
         if (licenseRequest.getExpiryDate() != null) {
             license.setExpiryDate(licenseRequest.getExpiryDate());
         }
-        // Only update user relation if you allow, usually you DO NOT update user here
 
         // If new image provided, upload to Cloudinary & update
         if (imageFile != null && !imageFile.isEmpty()) {
             String imageUrl = cloudinaryService.uploadFile(imageFile);
-            license.setLicenseImage(imageUrl);
+			license.setLicenseImage(imageUrl);
         }
 
-        drivingLicenseDao.save(license);
+        DrivingLicense savedLicense = drivingLicenseDao.save(license);
 
-        return modelMapper.map(license, DrivingLicenseResponse.class);
+        return modelMapper.map(savedLicense, DrivingLicenseResponse.class);
     }
 
   
