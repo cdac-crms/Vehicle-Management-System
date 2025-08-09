@@ -7,19 +7,18 @@ const initialUser = {
   firstName: '',
   lastName: '',
   email: '',
-  phone: '',
-  address: ''
+  contactNo: '' // Updated to match backend field name
 };
 
 const initialLicence = {
   image: null,
-  license_image: '',
-  license_number: '',
-  expiry_date: '',
+  licenseImage: '', // Updated to camelCase
+  licenseNumber: '', // Updated to camelCase
+  expiryDate: '', // Updated to camelCase
   userId: '',
 };
 
-function MyProfilePage() {
+function UpdateProfilePage() {
   const navigate = useNavigate();
 
   // Get JWT token and userId from localStorage (stored during login)
@@ -62,7 +61,6 @@ function MyProfilePage() {
       setLoadingUser(true);
       setUserError('');
       try {
-        // Updated route: /users/myprofile/{userId} (matches backend)
         const resp = await fetch(`${API_BASE}/users/myprofile/${userId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -80,7 +78,7 @@ function MyProfilePage() {
         }
         
         const data = await resp.json();
-        setUser(data);
+        setUser(data); // Backend already returns camelCase fields
       } catch (e) {
         setUserError('Failed to load profile.');
       }
@@ -91,7 +89,6 @@ function MyProfilePage() {
       setLoadingLicence(true);
       setLicenceError('');
       try {
-        // Updated route: /customer/drivingLicense/user/{userId} (matches backend)
         const resp = await fetch(`${API_BASE}/customer/drivingLicense/user/${userId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -107,13 +104,10 @@ function MyProfilePage() {
           const data = await resp.json();
           setLicence({ 
             ...data, 
-            image: null,
-            license_number: data.licenseNumber, // Map backend field names
-            expiry_date: data.expiryDate,
-            license_image: data.licenseImage
+            image: null // Keep image as null for file uploads
           });
           setLicencePreview(data.licenseImage);
-          setLicenseId(data.licenseId); // Store license ID for updates
+          setLicenseId(data.licenseId);
           setHasLicense(true);
         } else if (resp.status === 404) {
           // No license found - this is OK
@@ -157,14 +151,13 @@ function MyProfilePage() {
     setLoadingUser(true);
     setUserError('');
     try {
-      // Updated route: /users/update-profile/{userId} (matches backend)
       const resp = await fetch(`${API_BASE}/users/update-profile/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(user) // Don't include userId in body, it's in path
+        body: JSON.stringify(user) // Send camelCase fields to backend
       });
 
       if (resp.status === 401 || resp.status === 403) {
@@ -216,9 +209,9 @@ function MyProfilePage() {
     try {
       const formData = new FormData();
       
-      // Map frontend field names to backend expected names
-      formData.append('licenseNumber', licence.license_number);
-      formData.append('expiryDate', licence.expiry_date);
+      // Use camelCase field names to match backend expectations
+      formData.append('licenseNumber', licence.licenseNumber);
+      formData.append('expiryDate', licence.expiryDate);
       formData.append('userId', userId);
       if (licence.image) formData.append('imageFile', licence.image);
 
@@ -259,9 +252,9 @@ function MyProfilePage() {
       const result = await resp.json();
       setLicence({
         ...licence,
-        license_image: result.licenseImage,
-        license_number: result.licenseNumber,
-        expiry_date: result.expiryDate,
+        licenseImage: result.licenseImage,
+        licenseNumber: result.licenseNumber,
+        expiryDate: result.expiryDate,
         userId: result.userId,
         image: null
       });
@@ -430,25 +423,13 @@ function MyProfilePage() {
             <div className="mb-2">
               <label className="form-label fw-semibold">Phone Number</label>
               <input
-                name="phone"
+                name="contactNo" // Updated to match backend field name
                 type="tel"
                 className="form-control"
                 value={user.contactNo}
                 onChange={handleUserChange}
                 disabled={!editingUser || loadingUser}
                 autoComplete="tel"
-              />
-            </div>
-            <div className="mb-2">
-              <label className="form-label fw-semibold">Address</label>
-              <input
-                name="address"
-                type="text"
-                className="form-control"
-                value={user.address}
-                onChange={handleUserChange}
-                disabled={!editingUser || loadingUser}
-                autoComplete="address-line1"
               />
             </div>
           </form>
@@ -519,7 +500,7 @@ function MyProfilePage() {
                 onChange={handleLicenceImageChange}
                 disabled={!editingLicence || loadingLicence}
               />
-              {(licencePreview || licence.license_image) && (
+              {(licencePreview || licence.licenseImage) && (
                 <div
                   className="d-flex justify-content-center align-items-center mt-3"
                   style={{
@@ -533,7 +514,7 @@ function MyProfilePage() {
                   }}
                 >
                   <img
-                    src={licencePreview || licence.license_image}
+                    src={licencePreview || licence.licenseImage}
                     alt="Licence Preview"
                     style={{
                       width: '80%',
@@ -549,10 +530,10 @@ function MyProfilePage() {
             <div className="mb-2">
               <label className="form-label fw-semibold">Licence Number</label>
               <input
-                name="license_number"
+                name="licenseNumber" // Updated to camelCase
                 type="text"
                 className="form-control"
-                value={licence.license_number}
+                value={licence.licenseNumber}
                 onChange={handleLicenceChange}
                 disabled={!editingLicence || loadingLicence}
               />
@@ -560,10 +541,10 @@ function MyProfilePage() {
             <div className="mb-2">
               <label className="form-label fw-semibold">Expiry Date</label>
               <input
-                name="expiry_date"
+                name="expiryDate" // Updated to camelCase
                 type="date"
                 className="form-control"
-                value={licence.expiry_date}
+                value={licence.expiryDate}
                 onChange={handleLicenceChange}
                 disabled={!editingLicence || loadingLicence}
               />
@@ -575,4 +556,4 @@ function MyProfilePage() {
   );
 }
 
-export default MyProfilePage;
+export default UpdateProfilePage;
