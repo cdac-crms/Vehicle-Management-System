@@ -169,23 +169,65 @@ public class BookingServiceImpl implements BookingService {
                 .collect(Collectors.toList());
     }
 
+//    @Override
+//    public OneBookingDto getBookingById(Long id) {
+//        Booking booking = bookingDao.findFullBookingById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("Booking ID not found: " + id));
+//
+//        User user = booking.getUser();
+//        DrivingLicense license = user.getDrivingLicense();
+//
+//        return OneBookingDto.builder()
+//                // Vehicle Info
+//                .name(booking.getVehicle().getVariant().getName())
+////                .companyName(booking.getVehicle().getVariant().getCompany().getName())
+//                .fuelType(booking.getVehicle().getVariant().getFuelType())
+//                .pricePerDay(booking.getVehicle().getPricePerDay().doubleValue())
+//                .registrationNumber(booking.getVehicle().getRegistrationNumber())
+//
+//                // Booking Info
+//                .bookingId(booking.getId())
+//                .bookingDate(booking.getBookingDate())
+//                .startDate(booking.getStartDate())
+//                .endDate(booking.getEndDate())
+//                .totalAmount(booking.getTotalAmount().doubleValue())
+//                .bookingStatus(booking.getBookingStatus())
+//
+//                // Customer Info
+//                .firstName(user.getFirstName())
+//                .lastName(user.getLastName())
+//                .email(user.getEmail())
+//                .contactNo(user.getContactNo())
+//
+//                // Driving License Info
+//                .licenseNumber(license.getLicenseNumber())
+//                .expiryDate(license.getExpiryDate())
+//                .licenseImage(license.getLicenseImage())
+//                .build();
+//    }
+    
+    
     @Override
     public OneBookingDto getBookingById(Long id) {
-        Booking booking = bookingDao.findById(id)
+        Booking booking = bookingDao.findFullBookingById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking ID not found: " + id));
 
         User user = booking.getUser();
         DrivingLicense license = user.getDrivingLicense();
+        
+        //debug
+        System.out.println("FuelType: " + booking.getVehicle().getVariant().getFuelType());
+        System.out.println("Email: " + user.getEmail());
+        System.out.println("ContactNo: " + user.getContactNo());
 
         return OneBookingDto.builder()
-                // Vehicle Info
                 .name(booking.getVehicle().getVariant().getName())
-//                .companyName(booking.getVehicle().getVariant().getCompany().getName())
-                .fuelType(booking.getVehicle().getVariant().getFuelType())
+                .companyName(booking.getVehicle().getVariant().getCompany().getName())
+                //.fuelType(booking.getVehicle().getVariant().getFuelType().name())
+                .fuelType(booking.getVehicle().getVariant().getFuelType().name())
                 .pricePerDay(booking.getVehicle().getPricePerDay().doubleValue())
                 .registrationNumber(booking.getVehicle().getRegistrationNumber())
 
-                // Booking Info
                 .bookingId(booking.getId())
                 .bookingDate(booking.getBookingDate())
                 .startDate(booking.getStartDate())
@@ -193,18 +235,18 @@ public class BookingServiceImpl implements BookingService {
                 .totalAmount(booking.getTotalAmount().doubleValue())
                 .bookingStatus(booking.getBookingStatus())
 
-                // Customer Info
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .contactNo(user.getContactNo())
 
-                // Driving License Info
                 .licenseNumber(license.getLicenseNumber())
                 .expiryDate(license.getExpiryDate())
                 .licenseImage(license.getLicenseImage())
                 .build();
     }
+
+    
     
     @Override
     public String updateBookingStatus(Long bookingId, BookingStatus status) {

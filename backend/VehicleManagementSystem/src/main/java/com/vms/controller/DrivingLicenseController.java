@@ -55,7 +55,7 @@ public class DrivingLicenseController {
         @PathVariable Long licenseId,
         @ModelAttribute("license") DrivingLicenseRequest license,
         @Parameter(description = "Driving license image file")
-        @RequestPart(required = false, value = "imageFile") MultipartFile file
+        @RequestParam(required = false, value = "imageFile") MultipartFile file
     ) throws IOException {
         DrivingLicenseResponse resp = drivingLicenseService.updateLicense(licenseId, license, file);
         return ResponseEntity.ok(resp);

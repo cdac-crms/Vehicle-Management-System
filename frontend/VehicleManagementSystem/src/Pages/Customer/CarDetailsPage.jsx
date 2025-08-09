@@ -50,8 +50,9 @@ function CarDetailsPage() {
     setLoadingCar(true);
     setError("");
     
+    // Updated route: /vehicle/{id} instead of /vehicles/{id}
     axios
-      .get(`http://localhost:8080/vehicles/${id}`, axiosConfig)
+      .get(`http://localhost:8080/vehicle/${id}`, axiosConfig)
       .then((res) => setCar(res.data))
       .catch((err) => {
         if (err.response && (err.response.status === 401 || err.response.status === 403)) {
@@ -156,8 +157,7 @@ function CarDetailsPage() {
     return null;
   }
 
-  // Cloudinary-compatible image logic
-  // Accepts either car.imageUrl or car.image as the URL. Fallback to placeholder if not set.
+  // Updated image property access based on VehicleDetailsDto structure
   const carImage =
     car.imageUrl || car.image || "https://via.placeholder.com/280x155?text=No+Image";
 

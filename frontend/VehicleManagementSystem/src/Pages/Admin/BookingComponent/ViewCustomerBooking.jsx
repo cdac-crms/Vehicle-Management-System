@@ -10,7 +10,7 @@ const ViewCustomerBooking = () => {
   useEffect(() => {
     fetchBookings();
   }, []);
-
+  
   const fetchBookings = async () => {
     try {
       const data = await getAllBookings();
