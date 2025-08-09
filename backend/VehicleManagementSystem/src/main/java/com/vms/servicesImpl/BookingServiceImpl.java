@@ -86,7 +86,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setUser(user);
         booking.setTotalAmount(totalAmount);
         booking.setBookingDate(LocalDate.now());
-        booking.setBookingStatus(BookingStatus.PENDING); // or your desired status
+        booking.setBookingStatus(BookingStatus.APPROVED); // or your desired status
 
         Booking saved = bookingDao.save(booking);
 

@@ -8,12 +8,13 @@ const cardStyle = {
   background: "#fff",
   borderRadius: "16px",
   boxShadow: "0 6px 28px rgba(17,34,102,0.17)",
-  width: "420px",
   minHeight: "195px",
-  padding: "2rem 2rem 1.5rem 2rem",
+  padding: "1.5rem",
   alignItems: "center",
   color: "#23232a",
-  transition: "transform 0.14s"
+  transition: "transform 0.14s",
+  flex: 1, // Added: Allow cards to grow and shrink
+  maxWidth: "400px" // Added: Maximum width constraint
 };
 
 const CustomerDashboard = () => {
@@ -104,12 +105,6 @@ const CustomerDashboard = () => {
     );
   }
 
-  // Arrange cards into rows for 3-column layout
-  const rows = [];
-  for (let i = 0; i < cars.length; i += 3) {
-    rows.push(cars.slice(i, i + 3));
-  }
-
   return (
     <div className="container py-4">
       {/* Search */}
@@ -143,20 +138,19 @@ const CustomerDashboard = () => {
         </div>
       ) : error ? (
         <div className="text-center text-danger py-5">{error}</div>
-      ) : rows.length === 0 ? (
+      ) : cars.length === 0 ? (
         <div className="text-center text-muted mt-5" style={{ fontSize: "1.22rem" }}>
           No cars found.
         </div>
       ) : (
-        rows.map((row, rowIdx) => (
-          <div key={rowIdx} className="d-flex justify-content-start mb-4 flex-wrap" style={{ gap: "1.5rem" }}>
-            {row.map(car => (
+        /* UPDATED: Use Bootstrap grid system for proper 3-column layout */
+        <div className="row g-4">
+          {cars.map(car => (
+            <div key={car.id} className="col-lg-4 col-md-6 col-sm-12">
               <div
-                key={car.id}
                 style={cardStyle}
-                onMouseOver={e => (e.currentTarget.style.transform = "translateY(-5px) scale(1.04)")}
+                onMouseOver={e => (e.currentTarget.style.transform = "translateY(-5px) scale(1.02)")}
                 onMouseOut={e => (e.currentTarget.style.transform = "none")}
-                className="mb-3"
               >
                 <img
                   src={
@@ -171,12 +165,13 @@ const CustomerDashboard = () => {
                     objectFit: "cover",
                     borderRadius: "7px",
                     marginRight: "1.2rem",
-                    boxShadow: "0 2px 7px rgba(17,34,102,0.11)"
+                    boxShadow: "0 2px 7px rgba(17,34,102,0.11)",
+                    flexShrink: 0 // Added: Prevent image from shrinking
                   }}
                   loading="lazy"
                   onError={e => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/110x72?text=No+Image"; }}
                 />
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}> {/* Added: minWidth to prevent text overflow */}
                   <div
                     style={{
                       display: "flex",
@@ -184,11 +179,14 @@ const CustomerDashboard = () => {
                       fontSize: "1.17rem",
                       marginBottom: "0.5rem",
                       color: "#1744ae",
-                      fontWeight: 600
+                      fontWeight: 600,
+                      flexWrap: "wrap" // Added: Allow wrapping for smaller screens
                     }}
                   >
-                    <span>{car.name}</span>
-                    <span>
+                    <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {car.name}
+                    </span>
+                    <span style={{ whiteSpace: "nowrap" }}>
                       ₹{car.pricePerDay}
                       <span style={{ fontSize: "0.97rem", color: "#1a239b" }}>/day</span>
                     </span>
@@ -199,23 +197,16 @@ const CustomerDashboard = () => {
                       alignItems: "center",
                       fontSize: "1.07rem",
                       color: "#173071",
-                      gap: "7px"
+                      gap: "7px",
+                      marginBottom: "0.5rem"
                     }}
                   >
-                    <span style={{ fontSize: "1.17rem", marginRight: "0.2rem" }}>⛽</span>
+                    <span style={{ fontSize: "1.17rem" }}>⛽</span>
                     <span>{car.fuel}</span>
-                    <span
-                      style={{
-                        fontSize: "1.17rem",
-                        marginRight: "0.2rem",
-                        marginLeft: 18
-                      }}
-                    >
-                      👥
-                    </span>
+                    <span style={{ fontSize: "1.17rem", marginLeft: "10px" }}>👥</span>
                     <span>{car.capacity}</span>
                   </div>
-                  <div className="d-flex align-items-center mt-2">
+                  <div className="d-flex align-items-center mb-3">
                     <span style={{ fontWeight: 500, color: "#837202", marginRight: 4 }}>Rating</span>
                     {[1, 2, 3, 4, 5].map(i => (
                       <AiFillStar
@@ -228,13 +219,7 @@ const CustomerDashboard = () => {
                       {car.rating}
                     </span>
                   </div>
-                  <div
-                    style={{
-                      marginTop: "1.2rem",
-                      display: "flex",
-                      justifyContent: "flex-end"
-                    }}
-                  >
+                  <div className="d-flex justify-content-end">
                     <Link
                       to={`/customer/car-details/${car.id}`}
                       style={{
@@ -246,7 +231,8 @@ const CustomerDashboard = () => {
                         textDecoration: "none",
                         fontWeight: 600,
                         fontSize: "1rem",
-                        transition: "background 0.15s"
+                        transition: "background 0.15s",
+                        whiteSpace: "nowrap"
                       }}
                       onMouseOver={e => (e.currentTarget.style.background = "#384ec6")}
                       onMouseOut={e => (e.currentTarget.style.background = "#112266")}
@@ -256,9 +242,9 @@ const CustomerDashboard = () => {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        ))
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

@@ -37,7 +37,7 @@ public class DrivingLicenseController {
     public ResponseEntity<DrivingLicenseResponse> createLicense(
         @ModelAttribute("license") DrivingLicenseRequest license,
         @Parameter(description = "Driving license image file")
-        @RequestParam("imageFile") MultipartFile file
+        @RequestPart(value = "imageFile", required = true) MultipartFile file  // ✅ Use @RequestPart
     ) throws IOException {
         Long userId = license.getUserId();
         // Check if a license already exists for this user
@@ -55,7 +55,7 @@ public class DrivingLicenseController {
         @PathVariable Long licenseId,
         @ModelAttribute("license") DrivingLicenseRequest license,
         @Parameter(description = "Driving license image file")
-        @RequestParam(required = false, value = "imageFile") MultipartFile file
+        @RequestPart(value = "imageFile", required = false) MultipartFile file  // ✅ Use @RequestPart
     ) throws IOException {
         DrivingLicenseResponse resp = drivingLicenseService.updateLicense(licenseId, license, file);
         return ResponseEntity.ok(resp);

@@ -7,14 +7,14 @@ const initialUser = {
   firstName: '',
   lastName: '',
   email: '',
-  contactNo: '' // Updated to match backend field name
+  contactNo: ''
 };
 
 const initialLicence = {
   image: null,
-  licenseImage: '', // Updated to camelCase
-  licenseNumber: '', // Updated to camelCase
-  expiryDate: '', // Updated to camelCase
+  licenseImage: '',
+  licenseNumber: '', // Will be converted to Long in backend
+  expiryDate: '',
   userId: '',
 };
 
@@ -37,7 +37,7 @@ function UpdateProfilePage() {
   const [loadingLicence, setLoadingLicence] = useState(false);
   const [licenceError, setLicenceError] = useState('');
   const [hasLicense, setHasLicense] = useState(false);
-  const [licenseId, setLicenseId] = useState(null); // Store license ID for updates
+  const [licenseId, setLicenseId] = useState(null);
 
   // Helper function to clear auth data and redirect
   const clearAuthAndRedirect = () => {
@@ -78,7 +78,7 @@ function UpdateProfilePage() {
         }
         
         const data = await resp.json();
-        setUser(data); // Backend already returns camelCase fields
+        setUser(data);
       } catch (e) {
         setUserError('Failed to load profile.');
       }
@@ -104,13 +104,14 @@ function UpdateProfilePage() {
           const data = await resp.json();
           setLicence({ 
             ...data, 
-            image: null // Keep image as null for file uploads
+            // Convert Long to string for display in form
+            licenseNumber: data.licenseNumber ? String(data.licenseNumber) : '',
+            image: null
           });
           setLicencePreview(data.licenseImage);
           setLicenseId(data.licenseId);
           setHasLicense(true);
         } else if (resp.status === 404) {
-          // No license found - this is OK
           setHasLicense(false);
           setLicence({ ...initialLicence, userId, image: null });
           setLicencePreview(null);
@@ -157,7 +158,7 @@ function UpdateProfilePage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(user) // Send camelCase fields to backend
+        body: JSON.stringify(user)
       });
 
       if (resp.status === 401 || resp.status === 403) {
@@ -180,7 +181,6 @@ function UpdateProfilePage() {
   const handleUserCancel = () => {
     setLoadingUser(true);
     setTimeout(() => {
-      // Re-fetch original data or reset to initial state
       setUser(initialUser);
       setEditingUser(false);
       setLoadingUser(false);
@@ -209,15 +209,41 @@ function UpdateProfilePage() {
     try {
       const formData = new FormData();
       
-      // Use camelCase field names to match backend expectations
-      formData.append('licenseNumber', licence.licenseNumber);
-      formData.append('expiryDate', licence.expiryDate);
+      // **CHANGE 1: Send individual fields instead of complex object**
+      if (licence.licenseNumber && licence.licenseNumber.trim()) {
+        const licenseNumberStr = licence.licenseNumber.trim();
+        
+        // Validate it's a valid number
+        if (!/^\d+$/.test(licenseNumberStr)) {
+          setLicenceError('License number must contain only digits');
+          setLoadingLicence(false);
+          return;
+        }
+        
+        // Check if it's within Long range
+        const licenseNumberValue = parseInt(licenseNumberStr, 10);
+        if (licenseNumberValue < 0 || licenseNumberValue > Number.MAX_SAFE_INTEGER) {
+          setLicenceError('License number is out of valid range');
+          setLoadingLicence(false);
+          return;
+        }
+        
+        formData.append('licenseNumber', licenseNumberStr);
+      }
+      
+      if (licence.expiryDate) {
+        formData.append('expiryDate', licence.expiryDate);
+      }
       formData.append('userId', userId);
-      if (licence.image) formData.append('imageFile', licence.image);
+      
+      // **CHANGE 2: Use 'imageFile' instead of 'file' to match backend controller**
+      if (licence.image && licence.image instanceof File) {
+        formData.append('imageFile', licence.image);
+      }
 
       let resp;
       if (hasLicense && licenseId) {
-        // Update existing license: PUT /customer/drivingLicense/{licenseId}
+        // Update existing license
         resp = await fetch(`${API_BASE}/customer/drivingLicense/${licenseId}`, {
           method: 'PUT',
           headers: { 
@@ -226,7 +252,7 @@ function UpdateProfilePage() {
           body: formData
         });
       } else {
-        // Create new license: POST /customer/drivingLicense
+        // Create new license
         resp = await fetch(`${API_BASE}/customer/drivingLicense`, {
           method: 'POST',
           headers: { 
@@ -242,18 +268,22 @@ function UpdateProfilePage() {
         return;
       }
 
-      if (resp.status === 409) { // Conflict - license already exists
+      if (resp.status === 409) {
         setLicenceError('A license already exists for this user.');
         return;
       }
 
-      if (!resp.ok) throw new Error('Failed to save license');
+      if (!resp.ok) {
+        const errorText = await resp.text();
+        throw new Error(`HTTP ${resp.status}: ${errorText}`);
+      }
       
       const result = await resp.json();
       setLicence({
         ...licence,
         licenseImage: result.licenseImage,
-        licenseNumber: result.licenseNumber,
+        // Convert Long response back to string for display
+        licenseNumber: result.licenseNumber ? String(result.licenseNumber) : '',
         expiryDate: result.expiryDate,
         userId: result.userId,
         image: null
@@ -263,11 +293,8 @@ function UpdateProfilePage() {
       setHasLicense(true);
       setEditingLicence(false);
 
-      // If new image was uploaded, show preview
-      if (licence.image) {
-        setLicencePreview(URL.createObjectURL(licence.image));
-      }
     } catch (e) {
+      console.error('License update error:', e);
       setLicenceError('Failed to update license: ' + e.message);
     }
     setLoadingLicence(false);
@@ -279,11 +306,24 @@ function UpdateProfilePage() {
     setEditingLicence(false);
   };
 
-  const handleLicenceChange = e =>
-    setLicence({
-      ...licence,
-      [e.target.name]: e.target.value
-    });
+  const handleLicenceChange = e => {
+    const { name, value } = e.target;
+    
+    // Special handling for license number to ensure only digits
+    if (name === 'licenseNumber') {
+      // Allow only digits
+      const numericValue = value.replace(/[^\d]/g, '');
+      setLicence({
+        ...licence,
+        [name]: numericValue
+      });
+    } else {
+      setLicence({
+        ...licence,
+        [name]: value
+      });
+    }
+  };
 
   const handleLicenceImageChange = e => {
     const file = e.target.files[0];
@@ -423,7 +463,7 @@ function UpdateProfilePage() {
             <div className="mb-2">
               <label className="form-label fw-semibold">Phone Number</label>
               <input
-                name="contactNo" // Updated to match backend field name
+                name="contactNo"
                 type="tel"
                 className="form-control"
                 value={user.contactNo}
@@ -530,18 +570,21 @@ function UpdateProfilePage() {
             <div className="mb-2">
               <label className="form-label fw-semibold">Licence Number</label>
               <input
-                name="licenseNumber" // Updated to camelCase
+                name="licenseNumber"
                 type="text"
                 className="form-control"
                 value={licence.licenseNumber}
                 onChange={handleLicenceChange}
                 disabled={!editingLicence || loadingLicence}
+                placeholder="Enter numeric license number"
+                pattern="[0-9]*"
+                inputMode="numeric"
               />
             </div>
             <div className="mb-2">
               <label className="form-label fw-semibold">Expiry Date</label>
               <input
-                name="expiryDate" // Updated to camelCase
+                name="expiryDate"
                 type="date"
                 className="form-control"
                 value={licence.expiryDate}
