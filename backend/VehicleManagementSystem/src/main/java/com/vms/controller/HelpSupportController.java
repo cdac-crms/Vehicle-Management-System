@@ -23,7 +23,6 @@ import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/customer/help-support")
-//@CrossOrigin(origins = "http://localhost:5173",allowCredentials = "true")
 @AllArgsConstructor
 
 public class HelpSupportController {
@@ -63,7 +62,6 @@ public class HelpSupportController {
         return new ResponseEntity<>(updated, HttpStatus.OK);
     }
 
-    // 5. Delete help/support request - Admin Side
     // 5. Delete help/support request - Admin Side
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteHelpSupport(@PathVariable Long id) {

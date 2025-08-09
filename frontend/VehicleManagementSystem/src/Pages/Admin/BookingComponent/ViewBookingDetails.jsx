@@ -103,11 +103,15 @@ const ViewBookingDetails = () => {
             <p><strong>DL Number:</strong> {booking.licenseNumber || "Not Provided"}</p>
             <p><strong>Expiry Date:</strong> {booking.expiryDate || "Not Provided"}</p>
             <div className="mt-2">
-              <img
+            <p><strong>License Image : </strong></p>
+              {booking.licenseImage?
+              (<img
                 src={booking.licenseImage}
                 alt="Driving Licence"
                 className="img-fluid rounded border"
-              />
+              /> ):(<p> Not Provided</p>)
+              }
+               
             </div>
           </div>
         </div>

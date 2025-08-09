@@ -5,6 +5,10 @@ const API_BASE_URL = 'http://localhost:8080/vehicle';
 // Helper to get token from localStorage
 const getAuthHeaders = (isMultipart = false) => {
   const token = localStorage.getItem("token");
+  if (!token) {
+    // No token, return empty config object without Authorization header
+    return {};
+  }
   return {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -12,6 +16,7 @@ const getAuthHeaders = (isMultipart = false) => {
     },
   };
 };
+
 
 // Add Vehicle
 export const addVehicle = async (formData) => {
@@ -29,12 +34,24 @@ export const addVehicle = async (formData) => {
 };
 
 // Get All Vehicles
+// export const getAllVehicles = async () => {
+//   try {
+//     const response = await axios.get(
+//       `${API_BASE_URL}/getAllVehicles`,
+//       getAuthHeaders()
+//     );
+//     console.log("Fetched vehicles:", response.data);
+//     return response.data;
+//   } catch (error) {
+//     console.error("Error fetching vehicles:", error.response?.data?.message || error.message);
+//     throw error;
+//   }
+// };
+
+
 export const getAllVehicles = async () => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL}/getAllVehicles`,
-      getAuthHeaders()
-    );
+    const response = await axios.get(`${API_BASE_URL}/getAllVehicles`);
     console.log("Fetched vehicles:", response.data);
     return response.data;
   } catch (error) {
@@ -42,6 +59,7 @@ export const getAllVehicles = async () => {
     throw error;
   }
 };
+
 
 // Get Vehicle by ID
 export const getVehicleById = async (vehicleId) => {

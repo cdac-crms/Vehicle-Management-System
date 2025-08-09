@@ -37,3 +37,14 @@ export const getAllReviews = async () => {
     throw error;
   }
 };
+
+
+export const getReviewsByVehicleId = async (vehicleId) => {
+  try {
+    const response = await axios.get(`http://localhost:8080/reviews/vehicle/${vehicleId}`);
+    return response.data; // array of reviews
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};

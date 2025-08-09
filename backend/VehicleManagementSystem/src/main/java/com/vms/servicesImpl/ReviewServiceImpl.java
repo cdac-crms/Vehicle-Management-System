@@ -10,6 +10,7 @@ import com.vms.dao.VehicleDao;
 import com.vms.dto.request.ReviewRequest;
 import com.vms.dto.response.CustomerApiResponse;
 import com.vms.dto.response.GetAllReviewsDto;
+import com.vms.dto.response.GetReviewsByVehicleDto;
 import com.vms.entities.Review;
 import com.vms.entities.User;
 import com.vms.entities.Vehicle;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -32,6 +34,7 @@ public class ReviewServiceImpl implements ReviewService {
 	 private final UserDao userDao;     
      private final VehicleDao vehicleDao;
      private final ModelMapper modelMapper;
+     
 	
     private final ReviewDao reviewDao;
     
@@ -68,5 +71,27 @@ public class ReviewServiceImpl implements ReviewService {
                 .variantName(review.getVehicle().getVariant().getName())
                 .build())
                 .toList();
+    }
+    
+    
+    @Override
+    public List<GetReviewsByVehicleDto> getReviewsByVehicleId(Long vehicleId) {
+        // Validate if vehicle exists; else throw exception
+        Vehicle vehicle = vehicleDao.findById(vehicleId)
+            .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found with id: " + vehicleId));
+
+        // Fetch all reviews for the given vehicle
+        List<Review> reviews = reviewDao.findByVehicle(vehicle);
+
+        // Map Review entities to DTOs
+        return reviews.stream()
+        	    .map(review -> GetReviewsByVehicleDto.builder()
+        	        .id(review.getId())
+        	        .rating(review.getRating())
+        	        .message(review.getMessage())
+        	        .customerName(review.getUser().getFirstName() + " " + review.getUser().getLastName())
+        	        .variantName(review.getVehicle().getVariant().getName())
+        	        .build())
+        	    .collect(Collectors.toList());
     }
 }

@@ -35,7 +35,6 @@ import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/users")
-//@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @AllArgsConstructor
 public class CustomerUserController {
 	

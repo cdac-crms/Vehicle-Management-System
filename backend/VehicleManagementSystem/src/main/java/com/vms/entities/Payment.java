@@ -23,9 +23,7 @@ import com.vms.entities.enums.PaymentStatus;
 @AttributeOverride(name = "id", column = @Column(name = "payment_id"))
 public class Payment extends BaseEntity{
 
-// In Booking Class Add this below:
-//	@OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
-//	private Payment payment;
+
 
 
     @Column(name = "amount", precision = 10, scale = 2)

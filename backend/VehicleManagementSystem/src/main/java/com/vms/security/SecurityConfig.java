@@ -41,7 +41,11 @@ public class SecurityConfig {
                         "/api/auth/login",            // Login
                         "/api/auth/register",         // Register
                         "/swagger-ui/**",             // Swagger docs
-                        "/v3/api-docs/**"              // OpenAPI docs
+                        "/v3/api-docs/**",              // OpenAPI docs
+                        "/vehicle/getAllVehicles",
+                        "/reviews/vehicle/**"
+                        
+
                     ).permitAll()
                     // Everything else requires authentication
                     .anyRequest().authenticated()
