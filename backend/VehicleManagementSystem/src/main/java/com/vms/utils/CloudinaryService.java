@@ -1,6 +1,5 @@
 package com.vms.utils;
 
-
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,10 +26,13 @@ public class CloudinaryService {
         ));
     }
 
-    public String uploadFile(MultipartFile file) throws IOException {
-        Map uploadResult = cloudinary.uploader()
-            .upload(file.getBytes(), ObjectUtils.emptyMap());
-        return uploadResult.get("secure_url").toString();
+    public String uploadFile(MultipartFile file) {
+        try {
+            Map<?, ?> uploadResult = cloudinary.uploader()
+                .upload(file.getBytes(), ObjectUtils.asMap("folder", "vehicle_rental"));
+            return uploadResult.get("secure_url").toString();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload image to Cloudinary", e);
+        }
     }
 }
-
