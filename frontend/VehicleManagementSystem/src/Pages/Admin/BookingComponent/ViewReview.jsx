@@ -11,7 +11,7 @@ const ViewReview = () => {
   const fetchReviews = async () => {
     try {
       const data = await getAllReviews();
-      console.log(data)
+      console.log(data);
       setReviews(data);
     } catch (error) {
       setMessage({ type: "danger", text: "Failed to load reviews." });
@@ -53,8 +53,8 @@ const ViewReview = () => {
                 <thead className="table-dark">
                   <tr>
                     <th>Review ID</th>
-                    <th>User ID</th>
-                    <th>Vehicle ID</th>
+                    <th>User</th>
+                    <th>Vehicle</th>
                     <th>Rating</th>
                     <th>Message</th>
                   </tr>
