@@ -33,26 +33,11 @@ export const addVehicle = async (formData) => {
   }
 };
 
-// Get All Vehicles
-// export const getAllVehicles = async () => {
-//   try {
-//     const response = await axios.get(
-//       `${API_BASE_URL}/getAllVehicles`,
-//       getAuthHeaders()
-//     );
-//     console.log("Fetched vehicles:", response.data);
-//     return response.data;
-//   } catch (error) {
-//     console.error("Error fetching vehicles:", error.response?.data?.message || error.message);
-//     throw error;
-//   }
-// };
 
 
 export const getAllVehicles = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/getAllVehicles`);
-    console.log("Fetched vehicles:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching vehicles:", error.response?.data?.message || error.message);
@@ -68,7 +53,6 @@ export const getVehicleById = async (vehicleId) => {
       `${API_BASE_URL}/getVehicleById/${vehicleId}`,
       getAuthHeaders()
     );
-    console.log("Fetched vehicle:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching vehicle:", error.response?.data?.message || error.message);

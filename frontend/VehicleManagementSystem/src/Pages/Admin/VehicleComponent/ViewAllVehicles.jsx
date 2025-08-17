@@ -13,7 +13,6 @@ const ViewAllVehicles = () => {
   const fetchVehicles = async () => {
     try {
       const res = await getAllVehicles();
-      console.log("Fetched vehicles:", res);
       setVehicles(Array.isArray(res) ? res : []);
     } catch (err) {
       console.error("Error fetching vehicles:", err);

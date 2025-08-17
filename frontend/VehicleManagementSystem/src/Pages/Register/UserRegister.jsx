@@ -62,7 +62,6 @@ const UserRegister = () => {
 
     try {
       const response = await registerUser(formData);
-      console.log('User registered:', response);
       setSuccess('User registered successfully!');
       setTimeout(() => navigate('/login'), 1000);
     } catch (err) {

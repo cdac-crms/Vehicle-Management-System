@@ -4,7 +4,9 @@ import { Navigate } from "react-router-dom";
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role"); // role saved separately
+  // const role = localStorage.getItem("role"); // role saved separately
+const encodedRole = localStorage.getItem("role");
+const role = encodedRole ? atob(encodedRole) : null; // decode
 
   if (!token) {
     // Not logged in

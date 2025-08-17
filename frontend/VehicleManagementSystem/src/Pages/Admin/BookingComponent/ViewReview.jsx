@@ -11,7 +11,6 @@ const ViewReview = () => {
   const fetchReviews = async () => {
     try {
       const data = await getAllReviews();
-      console.log(data);
       setReviews(data);
     } catch (error) {
       setMessage({ type: "danger", text: "Failed to load reviews." });

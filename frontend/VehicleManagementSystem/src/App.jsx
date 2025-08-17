@@ -30,6 +30,7 @@ import PaymentPage from './Pages/Customer/PaymentPage';
 import HelpSupport from "./Pages/Customer/HelpSupport";
 
 import ProtectedRoute from "./Components/ProtectedRoute";
+import Footer from "./Components/Footer";
 
 const adminRoutes = [
   { path: "/admin/register", element: <AdminRegisterForm /> },
@@ -89,10 +90,14 @@ function App() {
             element={
               <ProtectedRoute allowedRole="CUSTOMER">
                 {element}
+        {path !== "/customer/customer-dashboard" && path !== "/customer/my-profile" && <Footer />}
               </ProtectedRoute>
             }
           />
-        ))}
+          
+        ))
+        
+        }
       </Routes>
     </div>
   );

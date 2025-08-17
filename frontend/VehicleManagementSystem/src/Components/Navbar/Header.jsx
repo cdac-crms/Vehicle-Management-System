@@ -23,7 +23,10 @@ const Header = () => {
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  // const role = localStorage.getItem("role");
+  const encodedRole = localStorage.getItem("role");
+const role = encodedRole ? atob(encodedRole) : null; // decode
+
   const username = localStorage.getItem("name");
 
   const logoutHandler = () => {
