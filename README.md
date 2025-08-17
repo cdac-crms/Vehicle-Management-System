@@ -87,6 +87,7 @@ The database is **fully normalized** with referential integrity and indexed colu
    mvn spring-boot:run
    ```
 
+---
 
 ### **Frontend (React.js)**
 
