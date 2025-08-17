@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import Carousel from "react-bootstrap/Carousel";
 import { getAllVehicles } from "../../services/VehicleService";
 import { getReviewsByVehicleId } from "../../services/ReviewService";
+import Footer from "../../Components/Footer";
+import SummaryData from "../Admin/SummaryData";
 
 const SimpleModal = ({ show, onClose, title, children }) => {
   if (!show) return null;
@@ -50,7 +52,12 @@ const HomePage = () => {
 
   // auth
   const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role"); // "ADMIN" | "CUSTOMER" | null
+  // const role = localStorage.getItem("role"); // "ADMIN" | "CUSTOMER" | null
+
+  const encodedRole = localStorage.getItem("role");
+  const role = encodedRole ? atob(encodedRole) : null; // decode
+
+
   const isLoggedIn = !!token;
   const isAdmin = role === "ADMIN";
   const isCustomer = role === "CUSTOMER";
@@ -162,7 +169,7 @@ const HomePage = () => {
     return (total / reviews.length).toFixed(1);
   };
 
-  return (
+  return (  
     <div style={{ background: "#fff", color: "#102649", fontFamily: "Arial, Helvetica, sans-serif" }}>
 
       {/* Hero Section */}
@@ -244,7 +251,7 @@ const HomePage = () => {
       <main className="container my-5">
         {isAdmin ? (
           <section className="mb-5">
-            {/* Admin section - add admin controls here */}
+              <SummaryData/>
           </section>
         ) : (
           <section>
@@ -404,13 +411,7 @@ const HomePage = () => {
       </SimpleModal>
 
       {/* Footer */}
-      <footer className="text-white py-4 mt-5" style={{ backgroundColor: "#102649" }}>
-        <div className="container text-center">
-          <h5 className="mb-3">RentARide</h5>
-          <p className="mb-1">&copy; {new Date().getFullYear()} RentARide - Vehicle Rental System. All rights reserved.</p>
-          <p className="mb-0">Developed as a CDAC project.</p>
-        </div>
-      </footer>
+     <Footer/>
     </div>
   );
 };

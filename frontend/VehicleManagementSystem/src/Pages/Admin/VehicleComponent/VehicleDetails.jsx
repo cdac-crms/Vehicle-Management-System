@@ -13,7 +13,6 @@ const VehicleDetails = () => {
     const fetchVehicle = async () => {
       try {
         const response = await getVehicleById(id);
-        console.log("Fetched vehicle:", response);
         setVehicle(response);
         setLoading(false);
       } catch (err) {

@@ -37,7 +37,6 @@ export const getAllVariants = async () => {
       `${API_BASE_URL}/getAllVariants`,
       getAuthHeaders()
     );
-    console.log("Fetched variants:", response.data);
     return response.data;
   } catch (error) {
     console.error(

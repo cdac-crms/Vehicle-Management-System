@@ -53,7 +53,10 @@ const UserLoginForm = () => {
 
       // Store token and user info in localStorage
       localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.userRole); // from backend response
+      // localStorage.setItem("role", data.userRole); // from backend response
+      const encodedRole = btoa(data.userRole); // encode to base64
+      localStorage.setItem("role", encodedRole);
+
       localStorage.setItem("email", data.email);
       localStorage.setItem("userId", data.id);
       localStorage.setItem("name", data.firstName);

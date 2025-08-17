@@ -13,7 +13,6 @@ export const getAllCustomers = async () => {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log(response);
     return response.data;
   } catch (error) {
     console.error("Error fetching customers:", error.response?.data?.message || error.message);

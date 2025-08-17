@@ -28,7 +28,6 @@ const UpdateVehicleForm = () => {
     const fetchData = async () => {
       try {
         const vehicle = await getVehicleById(vehicleId);
-        console.log("Fetched vehicle:", vehicle);
         const variants = await getAllVariants();
 
         setVariantOptions(variants);
