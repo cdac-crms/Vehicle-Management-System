@@ -1,4 +1,3 @@
-
 # Vehicle Management System (VMS)
 
 The **Vehicle Management System (VMS)** is a web-based car rental application built with **React.js** (frontend) and **Spring Boot** (backend), using **MySQL** as the database. The platform simplifies the vehicle rental process for both **customers** and **administrators** by automating reservations, payments, and inventory management.
@@ -68,10 +67,9 @@ The database is **fully normalized** with referential integrity and indexed colu
    ```bash
    git clone <repo-url>
    cd backend/VehicleManagementSystem
-````
+    ```
 
-2. Import into your IDE  as a Maven project.
-
+2. Import into your IDE as a Maven project.
 3. Configure your `application.properties`:
 
    ```properties
@@ -115,7 +113,6 @@ The database is **fully normalized** with referential integrity and indexed colu
 * Implement discount/coupon management
 * Add advanced reporting with export options (PDF/Excel)
 
-
 ---
 
 ## **Contributors**
@@ -125,4 +122,3 @@ The database is **fully normalized** with referential integrity and indexed colu
 * **Gaurav**
 * **Tushar**
 
-```
