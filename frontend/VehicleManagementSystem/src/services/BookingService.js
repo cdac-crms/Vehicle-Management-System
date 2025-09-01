@@ -1,9 +1,12 @@
 import axios from "axios";
+import store from "../redux/store";  // <-- import Redux store
 
 const API_BASE_URL = "http://localhost:8080/booking";
 
+// Get token from Redux (fallback to localStorage)
 const getAuthHeaders = () => {
-  const token = localStorage.getItem("token");
+  const state = store.getState();
+  const token = state.auth?.token || localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 

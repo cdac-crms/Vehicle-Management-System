@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { loginUser } from "../../services/AuthenticationService"; // Adjust path as needed
-
+import { useDispatch } from "react-redux"; 
+import { loginUser } from "../../services/AuthenticationService";
+import { loginSuccess  } from  "../../redux/authSlice"; 
 const UserLoginForm = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch(); 
 
   const [formData, setFormData] = useState({
     email: "",
@@ -49,17 +51,15 @@ const UserLoginForm = () => {
     setError("");
 
     try {
-      const data = await loginUser(formData); // backend should return token, role, email, id
-
-      // Store token and user info in localStorage
-      localStorage.setItem("token", data.token);
-      // localStorage.setItem("role", data.userRole); // from backend response
-      const encodedRole = btoa(data.userRole); // encode to base64
-      localStorage.setItem("role", encodedRole);
-
-      localStorage.setItem("email", data.email);
-      localStorage.setItem("userId", data.id);
-      localStorage.setItem("name", data.firstName);
+      const data = await loginUser(formData); 
+     
+      dispatch(loginSuccess ({
+        token: data.token,
+        role: data.userRole,
+        email: data.email,
+        userId: data.id,
+        name: data.firstName
+      }));
 
       navigate("/");
     } catch (err) {
@@ -114,7 +114,6 @@ const UserLoginForm = () => {
           <div className="mb-4">
             <label className="form-label fw-semibold d-flex justify-content-between">
               <span>Password</span>
-            
             </label>
             <input
               name="password"

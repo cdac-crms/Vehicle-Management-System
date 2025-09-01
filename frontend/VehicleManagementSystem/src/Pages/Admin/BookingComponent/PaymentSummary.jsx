@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { selectToken } from "../../../redux/authSlice";
 import { getAllPayments } from "../../../services/PaymentService";
 
 const PaymentSummary = () => {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Redux auth
+  const token = useSelector(selectToken);
+
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        const data = await getAllPayments();
+        const data = await getAllPayments(); // send token if API requires auth
         setPayments(data);
       } catch (error) {
         console.error("Error fetching payments:", error);
@@ -17,7 +22,7 @@ const PaymentSummary = () => {
       }
     };
     fetchPayments();
-  }, []);
+  }, [token]);
 
   // Calculate total revenue from successful payments
   const totalRevenue = payments

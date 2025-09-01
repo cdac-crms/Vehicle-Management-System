@@ -1,16 +1,22 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { selectToken } from "../../../redux/authSlice";
 import { getAllReviews } from "../../../services/ReviewService";
+
 const ViewReview = () => {
   const [reviews, setReviews] = useState([]);
   const [message, setMessage] = useState(null);
 
+  // Redux auth token
+  const token = useSelector(selectToken);
+
   useEffect(() => {
     fetchReviews();
-  }, []);
+  }, [token]);
 
   const fetchReviews = async () => {
     try {
-      const data = await getAllReviews();
+      const data = await getAllReviews(); // send token if API requires auth
       setReviews(data);
     } catch (error) {
       setMessage({ type: "danger", text: "Failed to load reviews." });

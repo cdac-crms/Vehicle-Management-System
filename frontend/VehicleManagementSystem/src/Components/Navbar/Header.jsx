@@ -1,4 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../redux/authSlice"; 
 import { MdDashboard } from "react-icons/md";
 import {
   BsCarFrontFill,
@@ -15,33 +17,23 @@ import {
   BsPeopleFill,
   BsQuestionCircle,
 } from "react-icons/bs";
-
 import { FaRupeeSign } from "react-icons/fa";
 import { VscFeedback } from "react-icons/vsc";
 
 const Header = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const token = localStorage.getItem("token");
-  // const role = localStorage.getItem("role");
-  const encodedRole = localStorage.getItem("role");
-const role = encodedRole ? atob(encodedRole) : null; // decode
-
-  const username = localStorage.getItem("name");
+  // Get auth data from Redux store
+  const { token, role, name: username } = useSelector((state) => state.auth);
 
   const logoutHandler = () => {
-    localStorage.removeItem("admin");
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("name");
-    localStorage.removeItem("email");
-    localStorage.removeItem("userId");
-    navigate("/");
+    dispatch(logout()); // Clear Redux state
+    navigate("/");      // Redirect to home
   };
 
   // Dark Blue color for header background
   const navbarStyle = { backgroundColor: "#102649" };
-
   const iconStyle = {
     marginRight: "5px",
     verticalAlign: "middle",
@@ -50,7 +42,7 @@ const role = encodedRole ? atob(encodedRole) : null; // decode
 
   return (
     <nav
-      className="navbar navbar-expand-lg navbar-dark shadow-sm "
+      className="navbar navbar-expand-lg navbar-dark shadow-sm"
       style={navbarStyle}
     >
       <div className="container-fluid">
@@ -263,17 +255,6 @@ const role = encodedRole ? atob(encodedRole) : null; // decode
                   </Link>
                 </li>
 
-                {/* Help & Support */}
-                {/* <li className="nav-item">
-                  <Link
-                    to="/help-support"
-                    className="nav-link d-flex align-items-center text-light"
-                    style={{ fontWeight: 500 }}
-                  >
-                    <BsQuestionCircle style={iconStyle} /> Help & Support
-                  </Link>
-                </li> */}
-
                 <li className="nav-item">
                   <button
                     onClick={logoutHandler}
@@ -283,6 +264,7 @@ const role = encodedRole ? atob(encodedRole) : null; // decode
                     <BsBoxArrowRight style={iconStyle} /> Logout
                   </button>
                 </li>
+
                 {/* Username at right end */}
                 {username && (
                   <li

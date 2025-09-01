@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectToken } from "../../../redux/authSlice";
 import { getAllBookings } from '../../../services/BookingService';
 
 const ViewCustomerBooking = () => {
@@ -7,13 +9,16 @@ const ViewCustomerBooking = () => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const navigate = useNavigate();
 
+  // Redux auth token
+  const token = useSelector(selectToken);
+
   useEffect(() => {
     fetchBookings();
-  }, []);
+  }, [token]);
   
   const fetchBookings = async () => {
     try {
-      const data = await getAllBookings();
+      const data = await getAllBookings(token); // send token if API requires auth
       setBookings(data);
       setMessage({ type: '', text: '' });
     } catch (error) {
@@ -22,7 +27,6 @@ const ViewCustomerBooking = () => {
   };
 
   const handleViewDetails = (booking) => {
-    console.log(booking)
     navigate(`/admin/view-booking/${booking.id}`, { state: booking });
   };
 

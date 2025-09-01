@@ -11,7 +11,7 @@ import com.vms.dto.response.UserResponseDto;
 @Service
 public interface AuthenticationsService {
 
-	UserResponseDto register(UserRegisterRequestDto userRegisterRequestDto);
+	UserResponseDto register(UserRegisterRequestDto userRegisterRequestDto) ;
 
 	UserResponseDto login(UserLoginRequestDto userLoginRequestDto);
 }

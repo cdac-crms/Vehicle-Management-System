@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { registerAdmin } from '../../services/AdminService';
+import { loginSuccess } from '../../redux/authSlice';
 
 const AdminRegisterForm = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
     first_name: '',
@@ -48,7 +51,7 @@ const AdminRegisterForm = () => {
     }
 
     if (password !== confirmPassword) {
-      setError('Password and confirm password must be the same.');
+      setError('Password and confirm password must match.');
       return false;
     }
 
@@ -71,8 +74,9 @@ const AdminRegisterForm = () => {
     };
 
     try {
-      await registerAdmin(payload);
-      setSuccess('Admin registered successfully!');
+      const data = await registerAdmin(payload);
+     
+      setSuccess('Admin registered and logged in successfully!');
       setFormData({
         first_name: '',
         last_name: '',
@@ -81,20 +85,18 @@ const AdminRegisterForm = () => {
         confirmPassword: '',
         contact_no: ''
       });
-      // navigate('/login');
-    } catch (error) {
-      setError(error.response?.data?.message || "Registration failed.");
+
+      navigate('/admin/register'); // Redirect to admin dashboard
+    } catch (err) {
+      setError(err.response?.data?.message || "Registration failed.");
     }
   };
 
   return (
-<div
-  className="container-fluid d-flex justify-content-center align-items-center"
-  style={{
-    minHeight: '100vh',
-    backgroundColor: '#f4f6fc'
-  }}
->
+    <div
+      className="container-fluid d-flex justify-content-center align-items-center"
+      style={{ minHeight: '100vh', backgroundColor: '#f4f6fc' }}
+    >
       <div
         className="card shadow-lg p-4 rounded-4"
         style={{
@@ -103,7 +105,6 @@ const AdminRegisterForm = () => {
           background: 'linear-gradient(145deg, #ffffff, #e3e8f9)',
           border: '1px solid #dce3f1',
           fontSize: "0.88rem",
-
         }}
       >
         <h2 className="text-center mb-4" style={{ color: '#102649', fontWeight: 'bold' }}>
@@ -202,5 +203,3 @@ const AdminRegisterForm = () => {
 };
 
 export default AdminRegisterForm;
-
-

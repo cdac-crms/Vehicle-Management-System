@@ -1,9 +1,13 @@
 import axios from "axios";
+import store from "../redux/store"; // <-- added
 
 const API_BASE_URL = "http://localhost:8080/admin";
 
-// Utility to get the token from localStorage
-const getAuthToken = () => localStorage.getItem("token");
+// Get token from Redux first (fallback to localStorage)
+const getAuthToken = () => {
+  const state = store.getState();
+  return state.auth?.token || localStorage.getItem("token");
+};
 
 // Register a new admin
 export const registerAdmin = async (adminData) => {
@@ -14,6 +18,8 @@ export const registerAdmin = async (adminData) => {
         Authorization: `Bearer ${token}`,
       },
     });
+
+    console.log(response);
     return response.data;
   } catch (error) {
     console.error(

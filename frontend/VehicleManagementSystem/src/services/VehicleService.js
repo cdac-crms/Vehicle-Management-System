@@ -1,12 +1,18 @@
 import axios from 'axios';
+import store from '../redux/store'; // <-- added
 
 const API_BASE_URL = 'http://localhost:8080/vehicle';
 
-// Helper to get token from localStorage
+// Get token from Redux first (fallback to localStorage)
+const getAuthToken = () => {
+  const state = store.getState();
+  return state.auth?.token || localStorage.getItem("token");
+};
+
+// Helper to get token headers
 const getAuthHeaders = (isMultipart = false) => {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   if (!token) {
-    // No token, return empty config object without Authorization header
     return {};
   }
   return {
@@ -16,7 +22,6 @@ const getAuthHeaders = (isMultipart = false) => {
     },
   };
 };
-
 
 // Add Vehicle
 export const addVehicle = async (formData) => {
@@ -33,8 +38,7 @@ export const addVehicle = async (formData) => {
   }
 };
 
-
-
+// Get all vehicles (no auth needed)
 export const getAllVehicles = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/getAllVehicles`);
@@ -44,7 +48,6 @@ export const getAllVehicles = async () => {
     throw error;
   }
 };
-
 
 // Get Vehicle by ID
 export const getVehicleById = async (vehicleId) => {

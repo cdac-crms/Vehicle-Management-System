@@ -1,10 +1,13 @@
-// frontend/VehicleManagementSystem/src/services/ReviewService.js
 import axios from "axios";
+import store from "../redux/store"; // <-- added
 
 const API_BASE_URL = "http://localhost:8080/reviews";
 
-// Get token from localStorage
-const getAuthToken = () => localStorage.getItem("token");
+// Get token from Redux first (fallback to localStorage)
+const getAuthToken = () => {
+  const state = store.getState();
+  return state.auth?.token || localStorage.getItem("token");
+};
 
 // Create a new review
 export const createReview = async (reviewData) => {
@@ -37,7 +40,6 @@ export const getAllReviews = async () => {
     throw error;
   }
 };
-
 
 export const getReviewsByVehicleId = async (vehicleId) => {
   try {

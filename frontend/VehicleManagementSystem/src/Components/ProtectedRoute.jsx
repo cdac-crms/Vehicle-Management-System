@@ -1,24 +1,19 @@
-// src/Components/ProtectedRoute.jsx
 import React from "react";
 import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux"; 
 
 const ProtectedRoute = ({ children, allowedRole }) => {
-  const token = localStorage.getItem("token");
-  // const role = localStorage.getItem("role"); // role saved separately
-const encodedRole = localStorage.getItem("role");
-const role = encodedRole ? atob(encodedRole) : null; // decode
+  
+  const { token, role } = useSelector((state) => state.auth); 
 
   if (!token) {
-    // Not logged in
     return <Navigate to="/login" replace />;
   }
 
   if (allowedRole && role !== allowedRole) {
-    // Role mismatch, redirect to home or unauthorized page
     return <Navigate to="/" replace />;
   }
 
-  // Authorized
   return children;
 };
 

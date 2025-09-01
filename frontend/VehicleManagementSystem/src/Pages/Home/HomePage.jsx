@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Carousel from "react-bootstrap/Carousel";
 import { getAllVehicles } from "../../services/VehicleService";
 import { getReviewsByVehicleId } from "../../services/ReviewService";
@@ -50,12 +51,7 @@ const SimpleModal = ({ show, onClose, title, children }) => {
 const HomePage = () => {
   const navigate = useNavigate();
 
-  // auth
-  const token = localStorage.getItem("token");
-  // const role = localStorage.getItem("role"); // "ADMIN" | "CUSTOMER" | null
-
-  const encodedRole = localStorage.getItem("role");
-  const role = encodedRole ? atob(encodedRole) : null; // decode
+    const { token, role } = useSelector((state) => state.auth);
 
 
   const isLoggedIn = !!token;
@@ -417,3 +413,5 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
+
