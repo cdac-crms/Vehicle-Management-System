@@ -45,9 +45,16 @@ public class AuthenticationsServiceImpl implements AuthenticationsService {
 //    }
     
     @Override
-    public UserResponseDto register(UserRegisterRequestDto userRegisterRequestDto) {
+    public UserResponseDto register(UserRegisterRequestDto userRegisterRequestDto) throws RuntimeException {
         if (userDao.existsByEmail(userRegisterRequestDto.getEmail()))
-            throw new ApiException("Dup Email detected - User exists already!!!!");
+        	try {
+                throw new RuntimeException("Dup Email detected - User exists already!!!!");
+        		
+        	}
+        catch(Exception e )
+        {
+        	System.out.println("Exception");
+        }
 
         // Map DTO to entity
         User user = modelMapper.map(userRegisterRequestDto, User.class);

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { addVariant, getAllVariants } from '../../services/VariantService';
 import { getAllCompanies } from '../../services/CompanyService';
+import { selectToken, selectRole } from '../../redux/authSlice';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const AddVariantForm = () => {
@@ -11,19 +13,25 @@ const AddVariantForm = () => {
     seatingCapacity: '',
     fuelType: '',
   });
-
   const [companies, setCompanies] = useState([]);
   const [variants, setVariants] = useState([]);
   const [message, setMessage] = useState({ type: '', text: '' });
 
+  const token = useSelector(selectToken);
+  const role = useSelector(selectRole);
+
   useEffect(() => {
+    if (!token || role !== "ADMIN") {
+      setMessage({ type: 'danger', text: 'Access denied. Admins only.' });
+      return;
+    }
     loadCompanies();
     loadVariants();
-  }, []);
+  }, [token, role]);
 
   const loadCompanies = async () => {
     try {
-      const data = await getAllCompanies();
+      const data = await getAllCompanies(token);
       setCompanies(data);
     } catch (error) {
       setMessage({ type: 'danger', text: 'Failed to load companies.' });
@@ -32,7 +40,7 @@ const AddVariantForm = () => {
 
   const loadVariants = async () => {
     try {
-      const data = await getAllVariants();
+      const data = await getAllVariants(token);
       setVariants(data);
     } catch (error) {
       setMessage({ type: 'danger', text: 'Failed to load variants.' });
@@ -51,11 +59,10 @@ const AddVariantForm = () => {
     try {
       await addVariant({
         ...formData,
-
         fuelType: formData.fuelType.toUpperCase(),
         companyId: Number(formData.companyId),
         seatingCapacity: Number(formData.seatingCapacity),
-      });
+      }, token);
 
       setMessage({ type: 'success', text: 'Variant added successfully!' });
       setFormData({
@@ -65,7 +72,7 @@ const AddVariantForm = () => {
         seatingCapacity: '',
         fuelType: '',
       });
-      loadVariants(); // Refresh the list
+      loadVariants(); // Refresh list
     } catch (err) {
       setMessage({ type: 'danger', text: err.response?.data?.message || 'Failed to add variant.' });
     }
@@ -86,7 +93,6 @@ const AddVariantForm = () => {
               {message.text}
             </div>
           )}
-
           <form onSubmit={handleSubmit}>
             <div className="row g-3">
               <div className="col-md-6">
@@ -172,7 +178,7 @@ const AddVariantForm = () => {
       </div>
 
       {/* Variants List */}
-      <h3 className="mb-3 text-center" style={{ color: '#102649' }}> All Variants</h3>
+      <h3 className="mb-3 text-center" style={{ color: '#102649' }}>All Variants</h3>
       <div className="row">
         {variants.map((variant) => (
           <div className="col-md-4 mb-4" key={variant.id}>
@@ -185,13 +191,11 @@ const AddVariantForm = () => {
                 <ul className="list-group list-group-flush text-center">
                   <li className="list-group-item">Fuel Type: {variant.fuelType}</li>
                   <li className="list-group-item">Seats: {variant.seatingCapacity}</li>
-                  {/* <li className="list-group-item">Company: {variant.company?.name || 'N/A'}</li> */}
                 </ul>
               </div>
             </div>
           </div>
         ))}
-
         {variants.length === 0 && (
           <p className="text-muted text-center">No variants found.</p>
         )}

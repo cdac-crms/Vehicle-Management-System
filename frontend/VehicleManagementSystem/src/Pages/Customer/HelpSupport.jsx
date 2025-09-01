@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useSelector } from "react-redux";
 
 const initialState = {
   name: "",
@@ -16,19 +17,16 @@ const HelpSupport = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Get JWT token and userId from localStorage (stored during login)
-  const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
-  const userEmail = localStorage.getItem("email");
-  const userName = localStorage.getItem("name");
+  // Get JWT token and user info from Redux store
+  const token = useSelector(state => state.auth.token);
+  // const userId = useSelector(state => state.auth.user?.id);
+  const userId = useSelector((state) => state.auth.userId);
 
-  // Helper function to clear auth data and redirect
-  const clearAuthAndRedirect = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("role");
-    localStorage.removeItem("email");
-    localStorage.removeItem("name");
+  const userEmail = useSelector(state => state.auth.user?.email);
+  const userName = useSelector(state => state.auth.user?.name);
+
+  // Helper function to redirect if session invalid
+  const redirectToLogin = () => {
     navigate("/login");
   };
 
@@ -36,11 +34,11 @@ const HelpSupport = () => {
   useEffect(() => {
     if (!token || !userId) {
       setError("You are not logged in. Please login to access support.");
-      clearAuthAndRedirect();
+      redirectToLogin();
       return;
     }
 
-    // Pre-fill form with user data from localStorage
+    // Pre-fill form with Redux user data
     setForm(prev => ({
       ...prev,
       name: userName || "",
@@ -54,10 +52,10 @@ const HelpSupport = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!token || !userId) {
       setError("Authentication required. Please login to submit support request.");
-      clearAuthAndRedirect();
+      redirectToLogin();
       return;
     }
 
@@ -65,28 +63,23 @@ const HelpSupport = () => {
     setError("");
 
     try {
-      // Prepare support request data
       const supportRequest = {
-        userId: userId,
+        userId,
         name: form.name,
         email: form.email,
         concernType: form.concernType,
         message: form.message
       };
 
-      // Updated route: /customer/help-support (matches backend controller)
       await axios.post(
-        "http://localhost:8080/customer/help-support", 
+        "http://localhost:8080/customer/help-support",
         supportRequest,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setSubmitted(true);
       setForm(initialState);
+
       // Pre-fill user data again after reset
       setForm(prev => ({
         ...prev,
@@ -97,10 +90,10 @@ const HelpSupport = () => {
     } catch (err) {
       if (err.response && (err.response.status === 401 || err.response.status === 403)) {
         setError("Session expired. Please login again.");
-        clearAuthAndRedirect();
+        redirectToLogin();
       } else {
         setError(
-          err.response?.data?.message || 
+          err.response?.data?.message ||
           "Failed to submit support request. Please try again later."
         );
       }

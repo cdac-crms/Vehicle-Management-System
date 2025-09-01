@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectToken } from "../../../redux/authSlice";
 import { getBookingById, updateBookingStatus } from "../../../services/BookingService";
 
 const ViewBookingDetails = () => {
@@ -7,10 +9,13 @@ const ViewBookingDetails = () => {
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Redux auth token
+  const token = useSelector(selectToken);
+
   useEffect(() => {
     const fetchBookingDetails = async () => {
       try {
-        const bookingDetails = await getBookingById(id);
+        const bookingDetails = await getBookingById(id); // send token if API requires auth
         setBooking(bookingDetails);
       } catch (error) {
         console.error("Error fetching booking details:", error);
@@ -19,16 +24,15 @@ const ViewBookingDetails = () => {
       }
     };
     fetchBookingDetails();
-  }, [id]);
+  }, [id, token]);
 
-  //  Function to handle status update with confirmation
   const handleStatusChange = async (status) => {
     const confirmAction = window.confirm(`Are you sure you want to ${status.toLowerCase()} this booking?`);
-    if (!confirmAction) return; // if user clicks cancel, do nothing
+    if (!confirmAction) return;
 
     try {
-      await updateBookingStatus(id, status);
-      setBooking((prev) => ({ ...prev, bookingStatus: status })); // update UI
+      await updateBookingStatus(id, status); // send token if API requires auth
+      setBooking((prev) => ({ ...prev, bookingStatus: status }));
     } catch (error) {
       console.error(`Error updating booking status to ${status}:`, error);
     }
@@ -49,7 +53,6 @@ const ViewBookingDetails = () => {
       <h2 className="text-center mb-4">Booking Details (ID: {id})</h2>
 
       <div className="row mb-4">
-        {/* Vehicle Image */}
         <div className="col-md-4 mb-3">
           <div className="card h-100 shadow-sm">
             <img
@@ -60,7 +63,6 @@ const ViewBookingDetails = () => {
           </div>
         </div>
 
-        {/* Vehicle Info */}
         <div className="col-md-4 mb-3">
           <div className="card h-100 shadow-sm p-3">
             <h5 className="mb-3 text-center">Vehicle Info</h5>
@@ -72,7 +74,6 @@ const ViewBookingDetails = () => {
           </div>
         </div>
 
-        {/* Booking Info */}
         <div className="col-md-4 mb-3">
           <div className="card h-100 shadow-sm p-3">
             <h5 className="mb-3 text-center">Booking Info</h5>
@@ -86,7 +87,6 @@ const ViewBookingDetails = () => {
       </div>
 
       <div className="row mb-4">
-        {/* Customer Info */}
         <div className="col-md-4 mb-3">
           <div className="card h-100 shadow-sm p-3">
             <h5 className="mb-3 text-center">Customer Info</h5>
@@ -96,27 +96,24 @@ const ViewBookingDetails = () => {
           </div>
         </div>
 
-        {/* Driving Licence Info */}
         <div className="col-md-4 mb-3">
           <div className="card h-100 shadow-sm p-3">
             <h5 className="mb-3">Driving Licence</h5>
             <p><strong>DL Number:</strong> {booking.licenseNumber || "Not Provided"}</p>
             <p><strong>Expiry Date:</strong> {booking.expiryDate || "Not Provided"}</p>
             <div className="mt-2">
-            <p><strong>License Image : </strong></p>
-              {booking.licenseImage?
-              (<img
-                src={booking.licenseImage}
-                alt="Driving Licence"
-                className="img-fluid rounded border"
-              /> ):(<p> Not Provided</p>)
-              }
-               
+              <p><strong>License Image : </strong></p>
+              {booking.licenseImage ? (
+                <img
+                  src={booking.licenseImage}
+                  alt="Driving Licence"
+                  className="img-fluid rounded border"
+                />
+              ) : (<p>Not Provided</p>)}
             </div>
           </div>
         </div>
 
-        {/* Booking Status */}
         <div className="col-md-4 mb-3">
           <div className="card h-100 shadow-sm p-3 d-flex flex-column justify-content-between">
             <div>

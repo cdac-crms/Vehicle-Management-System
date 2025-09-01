@@ -1,602 +1,198 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { loginSuccess } from './../../redux/authSlice';
 
-const API_BASE = 'http://localhost:8080';
+const API_BASE = "http://localhost:8080";
 
-const initialUser = {
-  firstName: '',
-  lastName: '',
-  email: '',
-  contactNo: ''
-};
-
-const initialLicence = {
-  image: null,
-  licenseImage: '',
-  licenseNumber: '', // Will be converted to Long in backend
-  expiryDate: '',
-  userId: '',
-};
-
-function UpdateProfilePage() {
+const UpdateProfilePage = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { user, token } = useSelector((state) => state.auth);
 
-  // Get JWT token and userId from localStorage (stored during login)
-  const token = localStorage.getItem('token');
-  const userId = localStorage.getItem('userId');
-
-  // ---- State ----
-  const [user, setUser] = useState(initialUser);
   const [editingUser, setEditingUser] = useState(false);
   const [loadingUser, setLoadingUser] = useState(false);
-  const [userError, setUserError] = useState('');
+  const [userForm, setUserForm] = useState({ firstName: "", lastName: "", email: "", contactNo: "" });
+  const [userError, setUserError] = useState("");
 
-  const [licence, setLicence] = useState(initialLicence);
+  const [licence, setLicence] = useState({ licenseNumber: "", expiryDate: "" });
   const [licencePreview, setLicencePreview] = useState(null);
+  const [licenceFile, setLicenceFile] = useState(null);
   const [editingLicence, setEditingLicence] = useState(false);
   const [loadingLicence, setLoadingLicence] = useState(false);
-  const [licenceError, setLicenceError] = useState('');
-  const [hasLicense, setHasLicense] = useState(false);
+  const [licenceError, setLicenceError] = useState("");
+  const [hasLicence, setHasLicence] = useState(false);
   const [licenseId, setLicenseId] = useState(null);
 
-  // Helper function to clear auth data and redirect
-  const clearAuthAndRedirect = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('role');
-    localStorage.removeItem('email');
-    localStorage.removeItem('name');
-    navigate('/login');
-  };
+  // const userId = localStorage.getItem("userId");
+  const userId = useSelector((state) => state.auth.userId);
 
-  // ---- LOAD DATA ON MOUNT ----
+
+  // Redirect if no auth
   useEffect(() => {
     if (!token || !userId) {
-      setUserError('Authentication required. Please login to view your profile.');
-      clearAuthAndRedirect();
+      localStorage.clear();
+      navigate("/login");
       return;
     }
+    dispatch(loginSuccess(userId));
+  }, [dispatch, token, userId, navigate]);
 
-    async function fetchProfile() {
-      setLoadingUser(true);
-      setUserError('');
-      try {
-        const resp = await fetch(`${API_BASE}/users/myprofile/${userId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (resp.status === 401 || resp.status === 403) {
-          setUserError('Session expired. Please login again.');
-          clearAuthAndRedirect();
-          return;
-        }
-        
-        if (!resp.ok) {
-          throw new Error('Failed to load profile');
-        }
-        
-        const data = await resp.json();
-        setUser(data);
-      } catch (e) {
-        setUserError('Failed to load profile.');
-      }
-      setLoadingUser(false);
-    }
+  // Sync auth user to local form state
+  useEffect(() => {
+    if (user) setUserForm(user);
+  }, [user]);
 
-    async function fetchLicence() {
+  // Fetch licence from backend
+  useEffect(() => {
+    const fetchLicence = async () => {
       setLoadingLicence(true);
-      setLicenceError('');
+      setLicenceError("");
       try {
         const resp = await fetch(`${API_BASE}/customer/drivingLicense/user/${userId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` },
         });
-        
-        if (resp.status === 401 || resp.status === 403) {
-          clearAuthAndRedirect();
-          return;
-        }
-        
-        if (resp.ok) {
-          const data = await resp.json();
-          setLicence({ 
-            ...data, 
-            // Convert Long to string for display in form
-            licenseNumber: data.licenseNumber ? String(data.licenseNumber) : '',
-            image: null
-          });
-          setLicencePreview(data.licenseImage);
-          setLicenseId(data.licenseId);
-          setHasLicense(true);
-        } else if (resp.status === 404) {
-          setHasLicense(false);
-          setLicence({ ...initialLicence, userId, image: null });
+        if (resp.status === 404) {
+          setHasLicence(false);
+          setLicence({ licenseNumber: "", expiryDate: "" });
           setLicencePreview(null);
           setLicenseId(null);
-        } else {
-          throw new Error('Failed to load license');
+        } else if (!resp.ok) throw new Error("Failed to fetch license");
+        else {
+          const data = await resp.json();
+          setLicence({ licenseNumber: data.licenseNumber ? String(data.licenseNumber) : "", expiryDate: data.expiryDate });
+          setLicencePreview(data.licenseImage);
+          setLicenseId(data.licenseId);
+          setHasLicence(true);
         }
       } catch (e) {
-        setLicenceError('Failed to load license.');
+        setLicenceError("Failed to load license");
       }
       setLoadingLicence(false);
-    }
-
-    fetchProfile();
+    };
     fetchLicence();
   }, [token, userId]);
 
-  // ---- USER HANDLERS ----
-  const handleUserChange = e =>
-    setUser({ ...user, [e.target.name]: e.target.value });
+  // Handlers
+  const handleUserChange = (e) => setUserForm({ ...userForm, [e.target.name]: e.target.value });
 
-  const handleUserEdit = () => {
-    if (!token || !userId) {
-      setUserError('Authentication required. Please login again.');
-      clearAuthAndRedirect();
-      return;
-    }
-    setEditingUser(true);
-  };
-
-  const handleUserSave = async () => {
-    if (!token || !userId) {
-      setUserError('Authentication required. Please login again.');
-      clearAuthAndRedirect();
-      return;
-    }
-
+  const saveUser = async () => {
     setLoadingUser(true);
-    setUserError('');
+    setUserError("");
     try {
-      const resp = await fetch(`${API_BASE}/users/update-profile/${userId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(user)
-      });
-
-      if (resp.status === 401 || resp.status === 403) {
-        setUserError('Session expired. Please login again.');
-        clearAuthAndRedirect();
-        return;
-      }
-
-      if (!resp.ok) {
-        throw new Error('Failed to save profile');
-      }
-
+      await dispatch(loginSuccess({ userId, data: userForm })).unwrap();
       setEditingUser(false);
     } catch (e) {
-      setUserError('Failed to save profile');
+      setUserError("Failed to save profile");
     }
     setLoadingUser(false);
   };
 
-  const handleUserCancel = () => {
-    setLoadingUser(true);
-    setTimeout(() => {
-      setUser(initialUser);
-      setEditingUser(false);
-      setLoadingUser(false);
-    }, 400);
-  };
-
-  // ---- LICENCE HANDLERS ----
-  const handleLicenceEdit = () => {
-    if (!token || !userId) {
-      setLicenceError('Authentication required. Please login again.');
-      clearAuthAndRedirect();
-      return;
-    }
-    setEditingLicence(true);
-  };
-
-  const handleLicenceSave = async () => {
-    if (!token || !userId) {
-      setLicenceError('Authentication required. Please login again.');
-      clearAuthAndRedirect();
-      return;
-    }
-
-    setLoadingLicence(true);
-    setLicenceError('');
-    try {
-      const formData = new FormData();
-      
-      // **CHANGE 1: Send individual fields instead of complex object**
-      if (licence.licenseNumber && licence.licenseNumber.trim()) {
-        const licenseNumberStr = licence.licenseNumber.trim();
-        
-        // Validate it's a valid number
-        if (!/^\d+$/.test(licenseNumberStr)) {
-          setLicenceError('License number must contain only digits');
-          setLoadingLicence(false);
-          return;
-        }
-        
-        // Check if it's within Long range
-        const licenseNumberValue = parseInt(licenseNumberStr, 10);
-        if (licenseNumberValue < 0 || licenseNumberValue > Number.MAX_SAFE_INTEGER) {
-          setLicenceError('License number is out of valid range');
-          setLoadingLicence(false);
-          return;
-        }
-        
-        formData.append('licenseNumber', licenseNumberStr);
-      }
-      
-      if (licence.expiryDate) {
-        formData.append('expiryDate', licence.expiryDate);
-      }
-      formData.append('userId', userId);
-      
-      // **CHANGE 2: Use 'imageFile' instead of 'file' to match backend controller**
-      if (licence.image && licence.image instanceof File) {
-        formData.append('imageFile', licence.image);
-      }
-
-      let resp;
-      if (hasLicense && licenseId) {
-        // Update existing license
-        resp = await fetch(`${API_BASE}/customer/drivingLicense/${licenseId}`, {
-          method: 'PUT',
-          headers: { 
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        });
-      } else {
-        // Create new license
-        resp = await fetch(`${API_BASE}/customer/drivingLicense`, {
-          method: 'POST',
-          headers: { 
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        });
-      }
-
-      if (resp.status === 401 || resp.status === 403) {
-        setLicenceError('Session expired. Please login again.');
-        clearAuthAndRedirect();
-        return;
-      }
-
-      if (resp.status === 409) {
-        setLicenceError('A license already exists for this user.');
-        return;
-      }
-
-      if (!resp.ok) {
-        const errorText = await resp.text();
-        throw new Error(`HTTP ${resp.status}: ${errorText}`);
-      }
-      
-      const result = await resp.json();
-      setLicence({
-        ...licence,
-        licenseImage: result.licenseImage,
-        // Convert Long response back to string for display
-        licenseNumber: result.licenseNumber ? String(result.licenseNumber) : '',
-        expiryDate: result.expiryDate,
-        userId: result.userId,
-        image: null
-      });
-      setLicencePreview(result.licenseImage);
-      setLicenseId(result.licenseId);
-      setHasLicense(true);
-      setEditingLicence(false);
-
-    } catch (e) {
-      console.error('License update error:', e);
-      setLicenceError('Failed to update license: ' + e.message);
-    }
-    setLoadingLicence(false);
-  };
-
-  const handleLicenceCancel = () => {
-    setLicence({ ...initialLicence, userId });
-    setLicencePreview(null);
-    setEditingLicence(false);
-  };
-
-  const handleLicenceChange = e => {
+  const handleLicenceChange = (e) => {
     const { name, value } = e.target;
-    
-    // Special handling for license number to ensure only digits
-    if (name === 'licenseNumber') {
-      // Allow only digits
-      const numericValue = value.replace(/[^\d]/g, '');
-      setLicence({
-        ...licence,
-        [name]: numericValue
-      });
-    } else {
-      setLicence({
-        ...licence,
-        [name]: value
-      });
-    }
+    if (name === "licenseNumber") setLicence({ ...licence, [name]: value.replace(/\D/g, "") });
+    else setLicence({ ...licence, [name]: value });
   };
 
-  const handleLicenceImageChange = e => {
+  const handleLicenceFile = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setLicence({ ...licence, image: file });
+      setLicenceFile(file);
       setLicencePreview(URL.createObjectURL(file));
     } else {
-      setLicence({ ...licence, image: null });
+      setLicenceFile(null);
       setLicencePreview(null);
     }
   };
 
-  // Early return if not authenticated
-  if (!token || !userId) {
-    return (
-      <div className="container-fluid d-flex justify-content-center align-items-center" style={{ minHeight: '100vh', background: '#f6fafd' }}>
-        <div className="text-center">
-          <div className="alert alert-warning">
-            <i className="bi bi-exclamation-triangle-fill me-2"></i>
-            Authentication required. Redirecting to login...
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const saveLicence = async () => {
+    if (!token || !userId) return;
+    setLoadingLicence(true);
+    setLicenceError("");
+    try {
+      const formData = new FormData();
+      formData.append("licenseNumber", licence.licenseNumber);
+      formData.append("expiryDate", licence.expiryDate);
+      formData.append("userId", userId);
+      if (licenceFile) formData.append("imageFile", licenceFile);
 
-  const btnStyle = {
-    minWidth: '80px',
-    marginLeft: '0.5rem',
-    borderRadius: '5px',
-    fontWeight: 'bold',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
+      const resp = hasLicence
+        ? await fetch(`${API_BASE}/customer/drivingLicense/${licenseId}`, { method: "PUT", headers: { Authorization: `Bearer ${token}` }, body: formData })
+        : await fetch(`${API_BASE}/customer/drivingLicense`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData });
+
+      if (!resp.ok) throw new Error("Failed to save license");
+
+      const data = await resp.json();
+      setLicence({ licenseNumber: data.licenseNumber ? String(data.licenseNumber) : "", expiryDate: data.expiryDate });
+      setLicencePreview(data.licenseImage);
+      setLicenseId(data.licenseId);
+      setHasLicence(true);
+      setEditingLicence(false);
+      setLicenceFile(null);
+    } catch (e) {
+      setLicenceError("Failed to save license");
+    }
+    setLoadingLicence(false);
   };
 
+  const btnStyle = { minWidth: "80px", marginLeft: "0.5rem", borderRadius: "5px", fontWeight: "bold", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" };
+
   return (
-    <div
-      className="container-fluid d-flex justify-content-center"
-      style={{
-        background: '#f6fafd',
-        minHeight: '100vh',
-        padding: '2rem 0'
-      }}
-    >
-      <div style={{ width: '100%', maxWidth: '550px' }}>
+    <div className="container-fluid d-flex justify-content-center" style={{ background: "#f6fafd", minHeight: "100vh", padding: "2rem 0" }}>
+      <div style={{ width: "100%", maxWidth: "550px" }}>
         {/* User Info */}
-        <div className="card mb-4 shadow-sm" style={{ borderRadius: '12px', padding: '2rem' }}>
+        <div className="card mb-4 shadow-sm" style={{ borderRadius: "12px", padding: "2rem" }}>
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h4 className="mb-0">
-              <i className="bi bi-person-circle me-2"></i>
-              User Information
-            </h4>
+            <h4><i className="bi bi-person-circle me-2"></i>User Information</h4>
             {!editingUser ? (
-              <button
-                className="btn btn-primary"
-                style={btnStyle}
-                onClick={handleUserEdit}
-                disabled={loadingUser}
-              >
-                <i className="bi bi-pencil me-1"></i>
-                Edit
-              </button>
+              <button className="btn btn-primary" style={btnStyle} onClick={() => setEditingUser(true)}>Edit</button>
             ) : (
               <div>
-                <button
-                  className="btn btn-success"
-                  style={btnStyle}
-                  onClick={handleUserSave}
-                  disabled={loadingUser}
-                >
-                  {loadingUser ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-1"></span>
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <i className="bi bi-check-lg me-1"></i>
-                      Save
-                    </>
-                  )}
-                </button>
-                <button
-                  className="btn btn-danger"
-                  style={btnStyle}
-                  onClick={handleUserCancel}
-                  disabled={loadingUser}
-                >
-                  <i className="bi bi-x-lg me-1"></i>
-                  Cancel
-                </button>
+                <button className="btn btn-success" style={btnStyle} onClick={saveUser} disabled={loadingUser}>Save</button>
+                <button className="btn btn-danger" style={btnStyle} onClick={() => { setUserForm(user); setEditingUser(false); }} disabled={loadingUser}>Cancel</button>
               </div>
             )}
           </div>
-          {userError && (
-            <div className="alert alert-danger py-1">
-              <i className="bi bi-exclamation-circle me-2"></i>
-              {userError}
+          {userError && <div className="alert alert-danger py-1">{userError}</div>}
+          {["firstName","lastName","email","contactNo"].map(field => (
+            <div className="mb-2" key={field}>
+              <label className="form-label fw-semibold">{field === "contactNo" ? "Phone Number" : field.charAt(0).toUpperCase() + field.slice(1)}</label>
+              <input name={field} type={field==="email"?"email":field==="contactNo"?"tel":"text"} className="form-control" value={userForm[field]} onChange={handleUserChange} disabled={!editingUser || loadingUser} />
             </div>
-          )}
-          <form>
-            <div className="mb-2">
-              <label className="form-label fw-semibold">First Name</label>
-              <input
-                name="firstName"
-                type="text"
-                className="form-control"
-                value={user.firstName}
-                onChange={handleUserChange}
-                disabled={!editingUser || loadingUser}
-                autoComplete="given-name"
-              />
-            </div>
-            <div className="mb-2">
-              <label className="form-label fw-semibold">Last Name</label>
-              <input
-                name="lastName"
-                type="text"
-                className="form-control"
-                value={user.lastName}
-                onChange={handleUserChange}
-                disabled={!editingUser || loadingUser}
-                autoComplete="family-name"
-              />
-            </div>
-            <div className="mb-2">
-              <label className="form-label fw-semibold">Email</label>
-              <input
-                name="email"
-                type="email"
-                className="form-control"
-                value={user.email}
-                onChange={handleUserChange}
-                disabled={!editingUser || loadingUser}
-                autoComplete="email"
-              />
-            </div>
-            <div className="mb-2">
-              <label className="form-label fw-semibold">Phone Number</label>
-              <input
-                name="contactNo"
-                type="tel"
-                className="form-control"
-                value={user.contactNo}
-                onChange={handleUserChange}
-                disabled={!editingUser || loadingUser}
-                autoComplete="tel"
-              />
-            </div>
-          </form>
+          ))}
         </div>
 
-        {/* ==== DRIVING LICENSE ==== */}
-        <div className="card shadow-sm" style={{ borderRadius: '12px', padding: '2rem' }}>
+        {/* License */}
+        <div className="card shadow-sm" style={{ borderRadius: "12px", padding: "2rem" }}>
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h4 className="mb-0">
-              <i className="bi bi-card-text me-2"></i>
-              Driving Licence
-            </h4>
+            <h4><i className="bi bi-card-text me-2"></i>Driving Licence</h4>
             {!editingLicence ? (
-              <button
-                className="btn btn-primary"
-                style={btnStyle}
-                onClick={handleLicenceEdit}
-                disabled={loadingLicence}
-              >
-                <i className="bi bi-pencil me-1"></i>
-                Edit
-              </button>
+              <button className="btn btn-primary" style={btnStyle} onClick={() => setEditingLicence(true)}>Edit</button>
             ) : (
               <div>
-                <button
-                  className="btn btn-success"
-                  style={btnStyle}
-                  onClick={handleLicenceSave}
-                  disabled={loadingLicence}
-                >
-                  {loadingLicence ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-1"></span>
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <i className="bi bi-check-lg me-1"></i>
-                      Save
-                    </>
-                  )}
-                </button>
-                <button
-                  className="btn btn-danger"
-                  style={btnStyle}
-                  onClick={handleLicenceCancel}
-                  disabled={loadingLicence}
-                >
-                  <i className="bi bi-x-lg me-1"></i>
-                  Cancel
-                </button>
+                <button className="btn btn-success" style={btnStyle} onClick={saveLicence} disabled={loadingLicence}>Save</button>
+                <button className="btn btn-danger" style={btnStyle} onClick={() => { setEditingLicence(false); setLicenceFile(null); setLicencePreview(hasLicence ? licencePreview : null); }} disabled={loadingLicence}>Cancel</button>
               </div>
             )}
           </div>
-          {licenceError && (
-            <div className="alert alert-danger py-1">
-              <i className="bi bi-exclamation-circle me-2"></i>
-              {licenceError}
-            </div>
-          )}
-          <form>
-            <div className="mb-2">
-              <label className="form-label fw-semibold">Licence Image</label>
-              <input
-                type="file"
-                accept="image/*"
-                className="form-control"
-                onChange={handleLicenceImageChange}
-                disabled={!editingLicence || loadingLicence}
-              />
-              {(licencePreview || licence.licenseImage) && (
-                <div
-                  className="d-flex justify-content-center align-items-center mt-3"
-                  style={{
-                    background: '#f9fbff',
-                    border: '2px solid #2979ff',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 16px rgba(41,121,255,0.10), 0 1.5px 6px rgba(0,0,0,0.03)',
-                    maxWidth: '360px',
-                    padding: '1rem',
-                    margin: '0 auto'
-                  }}
-                >
-                  <img
-                    src={licencePreview || licence.licenseImage}
-                    alt="Licence Preview"
-                    style={{
-                      width: '80%',
-                      height: 'auto',
-                      objectFit: 'contain',
-                      borderRadius: '6px',
-                      border: '1px solid #d7dde6'
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-            <div className="mb-2">
-              <label className="form-label fw-semibold">Licence Number</label>
-              <input
-                name="licenseNumber"
-                type="text"
-                className="form-control"
-                value={licence.licenseNumber}
-                onChange={handleLicenceChange}
-                disabled={!editingLicence || loadingLicence}
-                placeholder="Enter numeric license number"
-                pattern="[0-9]*"
-                inputMode="numeric"
-              />
-            </div>
-            <div className="mb-2">
-              <label className="form-label fw-semibold">Expiry Date</label>
-              <input
-                name="expiryDate"
-                type="date"
-                className="form-control"
-                value={licence.expiryDate}
-                onChange={handleLicenceChange}
-                disabled={!editingLicence || loadingLicence}
-              />
-            </div>
-          </form>
+          {licenceError && <div className="alert alert-danger py-1">{licenceError}</div>}
+          <div className="mb-2">
+            <label className="form-label fw-semibold">Licence Image</label>
+            <input type="file" accept="image/*" className="form-control" onChange={handleLicenceFile} disabled={!editingLicence || loadingLicence} />
+            {licencePreview && <img src={licencePreview} alt="License Preview" className="img-fluid mt-2" style={{ maxHeight: "200px", objectFit: "contain" }} />}
+          </div>
+          <div className="mb-2">
+            <label className="form-label fw-semibold">Licence Number</label>
+            <input name="licenseNumber" type="text" className="form-control" value={licence.licenseNumber} onChange={handleLicenceChange} disabled={!editingLicence || loadingLicence} placeholder="Numeric only" />
+          </div>
+          <div className="mb-2">
+            <label className="form-label fw-semibold">Expiry Date</label>
+            <input name="expiryDate" type="date" className="form-control" value={licence.expiryDate} onChange={handleLicenceChange} disabled={!editingLicence || loadingLicence} />
+          </div>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default UpdateProfilePage;

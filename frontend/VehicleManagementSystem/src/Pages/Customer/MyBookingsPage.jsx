@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
 
 // Config
 const API_BASE = 'http://localhost:8080';
@@ -51,9 +52,11 @@ export default function MyBookingsPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
 
-  // Get JWT token and userId from localStorage (stored during login)
-  const token = localStorage.getItem('token');
-  const currentUserId = localStorage.getItem('userId');
+  // Redux auth
+  const token = useSelector(state => state.auth.token);
+  // const currentUserId = useSelector(state => state.auth.user?.id);
+  const currentUserId = useSelector((state) => state.auth.userId);
+
 
   useEffect(() => {
     if (!token || !currentUserId) {
@@ -61,10 +64,10 @@ export default function MyBookingsPage() {
       navigate('/login');
       return;
     }
-    
+
     setLoading(true);
     setErrorMsg('');
-    
+
     axios.get(`${API_BASE}/customer/booking?userId=${currentUserId}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -74,12 +77,6 @@ export default function MyBookingsPage() {
       })
       .catch(err => {
         if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-          // Clear all auth-related localStorage items
-          localStorage.removeItem('token');
-          localStorage.removeItem('userId');
-          localStorage.removeItem('role');
-          localStorage.removeItem('email');
-          localStorage.removeItem('name');
           navigate('/login');
         } else {
           setErrorMsg(err.response?.data?.message || 'Error fetching bookings');
@@ -88,7 +85,6 @@ export default function MyBookingsPage() {
       });
   }, [token, currentUserId, navigate]);
 
-  // Cancel booking: userId as param
   const handleCancel = async (booking) => {
     if (!token || !currentUserId) {
       toast.error('Authentication required. Please login again.');
@@ -97,7 +93,7 @@ export default function MyBookingsPage() {
     }
 
     if (!window.confirm('Are you sure you want to cancel this booking?')) return;
-    
+
     try {
       await axios.put(
         `${API_BASE}/customer/booking/${booking.bookingId}/cancel?userId=${currentUserId}`,
@@ -105,18 +101,11 @@ export default function MyBookingsPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setBookings(prev =>
-        prev.map(b =>
-          b.bookingId === booking.bookingId ? { ...b, bookingStatus: 'CANCELLED' } : b
-        )
+        prev.map(b => b.bookingId === booking.bookingId ? { ...b, bookingStatus: 'CANCELLED' } : b)
       );
       toast.success(`Booking #${booking.bookingId} cancelled!`);
     } catch (err) {
       if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('role');
-        localStorage.removeItem('email');
-        localStorage.removeItem('name');
         navigate('/login');
       } else {
         toast.error(err.response?.data?.message || 'Failed to cancel booking!');
@@ -141,14 +130,13 @@ export default function MyBookingsPage() {
         pricePerDay: booking.pricePerDay,
         startDate: booking.startDate,
         endDate: booking.endDate,
-        totalDays: totalDays,
+        totalDays,
         amount: totalAmount,
         userId: currentUserId
       }
     });
   };
 
-  // No longer passing userId via location.state since BookingDetailsPage gets it from localStorage
   const handleView = (booking) => {
     if (!token || !currentUserId) {
       toast.error('Authentication required. Please login again.');
@@ -167,7 +155,6 @@ export default function MyBookingsPage() {
     CONFIRMED: badgeStyles.confirmed,
   };
 
-  // Early return if not authenticated
   if (!token || !currentUserId) {
     return (
       <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: '#f5f7fa' }}>
@@ -182,33 +169,25 @@ export default function MyBookingsPage() {
 
   return (
     <div className="min-vh-100" style={{ background: '#f5f7fa' }}>
-      <div
-        className="container"
-        style={{
-          maxWidth: '1100px',
-          margin: '2rem auto',
-          padding: '2rem',
-          background: '#fff',
-          borderRadius: '14px',
-          boxShadow: '0 4px 16px rgba(24,44,123,0.09)'
-        }}
-      >
-        <h2
-          className="mb-4"
-          style={{ color: '#112266', textAlign: 'left' }}
-        >
-          All Bookings
-        </h2>
-        
+      <div className="container" style={{
+        maxWidth: '1100px',
+        margin: '2rem auto',
+        padding: '2rem',
+        background: '#fff',
+        borderRadius: '14px',
+        boxShadow: '0 4px 16px rgba(24,44,123,0.09)'
+      }}>
+        <h2 className="mb-4" style={{ color: '#112266', textAlign: 'left' }}>All Bookings</h2>
+
         {loading && (
           <div className="text-center py-4">
             <div className="spinner-border text-primary" />
             <div className="mt-2">Loading bookings...</div>
           </div>
         )}
-        
+
         {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
-        
+
         <div className="table-responsive">
           <table className="table align-middle mb-0" style={{ fontSize: '1rem', background: '#fff', borderCollapse: 'collapse' }}>
             <thead>
@@ -239,54 +218,23 @@ export default function MyBookingsPage() {
                   const totalDays = getDayDiff(b.startDate, b.endDate);
                   const totalPrice = totalDays * (b.pricePerDay || 0);
 
-                  const statusUpper = typeof b.bookingStatus === 'string'
-                    ? b.bookingStatus.toUpperCase()
-                    : '';
+                  const statusUpper = typeof b.bookingStatus === 'string' ? b.bookingStatus.toUpperCase() : '';
                   const statusStyle = statusStyleMap[statusUpper] || badgeStyles.default;
 
                   const actionButtons = [];
                   if (statusUpper === "PENDING") {
                     actionButtons.push(
-                      <button
-                        key="cancel"
-                        className="btn"
-                        style={{ ...actionBtnStyle.base, ...actionBtnStyle.cancel }}
-                        onClick={() => handleCancel(b)}
-                      >Cancel</button>
-                    );
-                    actionButtons.push(
-                      <button
-                        key="view"
-                        className="btn"
-                        style={{ ...actionBtnStyle.base, ...actionBtnStyle.view }}
-                        onClick={() => handleView(b)}
-                      >View</button>
+                      <button key="cancel" className="btn" style={{ ...actionBtnStyle.base, ...actionBtnStyle.cancel }} onClick={() => handleCancel(b)}>Cancel</button>,
+                      <button key="view" className="btn" style={{ ...actionBtnStyle.base, ...actionBtnStyle.view }} onClick={() => handleView(b)}>View</button>
                     );
                   } else if (statusUpper === "APPROVED") {
                     actionButtons.push(
-                      <button
-                        key="pay"
-                        className="btn"
-                        style={{ ...actionBtnStyle.base, ...actionBtnStyle.pay }}
-                        onClick={() => handlePay(b)}
-                      >Pay</button>
-                    );
-                    actionButtons.push(
-                      <button
-                        key="view"
-                        className="btn"
-                        style={{ ...actionBtnStyle.base, ...actionBtnStyle.view }}
-                        onClick={() => handleView(b)}
-                      >View</button>
+                      <button key="pay" className="btn" style={{ ...actionBtnStyle.base, ...actionBtnStyle.pay }} onClick={() => handlePay(b)}>Pay</button>,
+                      <button key="view" className="btn" style={{ ...actionBtnStyle.base, ...actionBtnStyle.view }} onClick={() => handleView(b)}>View</button>
                     );
                   } else {
                     actionButtons.push(
-                      <button
-                        key="view"
-                        className="btn"
-                        style={{ ...actionBtnStyle.base, ...actionBtnStyle.view }}
-                        onClick={() => handleView(b)}
-                      >View</button>
+                      <button key="view" className="btn" style={{ ...actionBtnStyle.base, ...actionBtnStyle.view }} onClick={() => handleView(b)}>View</button>
                     );
                   }
 
@@ -299,11 +247,7 @@ export default function MyBookingsPage() {
                       <td>{formatDateTime(b.bookingDate)}</td>
                       <td>{formatDate(b.startDate)}</td>
                       <td>{formatDate(b.endDate)}</td>
-                      <td>
-                        <span style={statusStyle}>
-                          {(statusUpper.charAt(0) || '') + (statusUpper.slice(1).toLowerCase() || '')}
-                        </span>
-                      </td>
+                      <td><span style={statusStyle}>{(statusUpper.charAt(0) || '') + (statusUpper.slice(1).toLowerCase() || '')}</span></td>
                       <td>{actionButtons}</td>
                     </tr>
                   );

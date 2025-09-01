@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { getCustomerById } from "../../../services/CustomerService";
+import { selectToken, selectRole } from '../../../redux/authSlice';
 
 const ViewCustomerProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  // Get token and role from Redux
+  const token = useSelector(selectToken);
+  const role = useSelector(selectRole);
 
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,7 +20,8 @@ const ViewCustomerProfile = () => {
     const fetchCustomer = async () => {
       setLoading(true);
       try {
-        const customerData = await getCustomerById(id);
+        // Pass token if API requires authentication
+        const customerData = await getCustomerById(id, token); 
         if (customerData) {
           setCustomer(customerData);
         } else {
@@ -27,8 +34,9 @@ const ViewCustomerProfile = () => {
         setLoading(false);
       }
     };
+
     fetchCustomer();
-  }, [id]);
+  }, [id, token]);
 
   if (loading) {
     return (
@@ -47,9 +55,7 @@ const ViewCustomerProfile = () => {
     );
   }
 
-  if (!customer) {
-    return null;
-  }
+  if (!customer) return null;
 
   return (
     <div className="container mt-4" style={{ fontFamily: 'Segoe UI' }}>
@@ -59,10 +65,7 @@ const ViewCustomerProfile = () => {
 
       <div className="row justify-content-center">
         <div className="col-md-6">
-          <div 
-            className="card p-4 shadow text-center d-flex align-items-center" 
-            style={{ border: '1px solid #102649' }}
-          >
+          <div className="card p-4 shadow text-center d-flex align-items-center" style={{ border: '1px solid #102649' }}>
             <h4 className="mb-3" style={{ color: '#102649' }}>
               {customer.firstName} {customer.lastName}
             </h4>

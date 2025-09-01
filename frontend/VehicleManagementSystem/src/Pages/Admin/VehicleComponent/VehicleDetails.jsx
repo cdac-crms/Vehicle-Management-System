@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectRole, selectToken } from '../../../redux/authSlice';
 import { getVehicleById } from '../../../services/VehicleService';
 
 const VehicleDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+
+  // Redux auth
+  const role = useSelector(selectRole);
+  const token = useSelector(selectToken);
+
   const [vehicle, setVehicle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -12,7 +19,7 @@ const VehicleDetails = () => {
   useEffect(() => {
     const fetchVehicle = async () => {
       try {
-        const response = await getVehicleById(id);
+        const response = await getVehicleById(id); // send token if backend needs auth
         setVehicle(response);
         setLoading(false);
       } catch (err) {
@@ -28,7 +35,7 @@ const VehicleDetails = () => {
       setError('Invalid vehicle ID');
       setLoading(false);
     }
-  }, [id]);
+  }, [id, token]);
 
   if (loading) return <div className="text-center mt-5">Loading vehicle details...</div>;
 
@@ -43,64 +50,74 @@ const VehicleDetails = () => {
     );
   }
 
- return (
-  <div className="container mt-5">
-    <h2 className="mb-4 text-center">Vehicle Details (ID: {vehicle.id})</h2>
-    <div className="card shadow-lg">
-      <div className="card-body">
-        <table className="table table-bordered">
-          <tbody>
-            <tr>
-              <th>Vehicle Image</th>
-              <td>
-                <img
-                  src={vehicle.image}
-                  alt="Vehicle"
-                  width="200"
-                  style={{ objectFit: "cover" }}
-                />
-              </td>
-            </tr>
-            <tr>
-              <th>Vehicle ID</th>
-              <td>{vehicle.id}</td>
-            </tr>
-            <tr>
-              <th>Variant Name</th>
-              <td>{vehicle.variantName}</td>
-            </tr>
-            <tr>
-              <th>Registration Number</th>
-              <td>{vehicle.registrationNumber}</td>
-            </tr>
-            <tr>
-              <th>Color</th>
-              <td>{vehicle.color}</td>
-            </tr>
-            <tr>
-              <th>Availability</th>
-              <td>{vehicle.availabilityStatus}</td>
-            </tr>
-            <tr>
-              <th>Price per Day</th>
-              <td>₹{vehicle.pricePerDay}</td>
-            </tr>
-            <tr>
-              <th>Mileage</th>
-              <td>{vehicle.mileage} km/l</td>
-            </tr>
-          </tbody>
-        </table>
-        <div className="text-center mt-4">
-          <button className="btn btn-secondary" onClick={() => navigate(-1)}>
-            Back to List
-          </button>
+  return (
+    <div className="container mt-5">
+      <h2 className="mb-4 text-center">Vehicle Details (ID: {vehicle.id})</h2>
+      <div className="card shadow-lg">
+        <div className="card-body">
+          <table className="table table-bordered">
+            <tbody>
+              <tr>
+                <th>Vehicle Image</th>
+                <td>
+                  <img
+                    src={vehicle.image}
+                    alt="Vehicle"
+                    width="200"
+                    style={{ objectFit: "cover" }}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <th>Vehicle ID</th>
+                <td>{vehicle.id}</td>
+              </tr>
+              <tr>
+                <th>Variant Name</th>
+                <td>{vehicle.variantName}</td>
+              </tr>
+              <tr>
+                <th>Registration Number</th>
+                <td>{vehicle.registrationNumber}</td>
+              </tr>
+              <tr>
+                <th>Color</th>
+                <td>{vehicle.color}</td>
+              </tr>
+              <tr>
+                <th>Availability</th>
+                <td>{vehicle.availabilityStatus}</td>
+              </tr>
+              <tr>
+                <th>Price per Day</th>
+                <td>₹{vehicle.pricePerDay}</td>
+              </tr>
+              <tr>
+                <th>Mileage</th>
+                <td>{vehicle.mileage} km/l</td>
+              </tr>
+            </tbody>
+          </table>
+
+          {/* Example: show edit button only for admins */}
+          {role === "ADMIN" && (
+            <div className="text-center mt-4">
+              <button className="btn btn-primary me-2" onClick={() => navigate(`/admin/vehicles/update/${vehicle.id}`)}>
+                Edit Vehicle
+              </button>
+            </div>
+          )}
+
+          <div className="text-center mt-4">
+            <button className="btn btn-secondary" onClick={() => navigate(-1)}>
+              Back to List
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
-
+  );
 };
 
 export default VehicleDetails;
+

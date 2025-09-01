@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { AiFillStar } from "react-icons/ai";
+import { useSelector } from "react-redux";
 
 const cardStyle = {
   display: "flex",
@@ -13,8 +14,8 @@ const cardStyle = {
   alignItems: "center",
   color: "#23232a",
   transition: "transform 0.14s",
-  flex: 1, // Added: Allow cards to grow and shrink
-  maxWidth: "400px" // Added: Maximum width constraint
+  flex: 1,
+  maxWidth: "400px"
 };
 
 const CustomerDashboard = () => {
@@ -24,9 +25,11 @@ const CustomerDashboard = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  // Get JWT token and userId from localStorage (stored during login)
-  const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
+  // Get JWT token and userId from Redux store
+  const token = useSelector(state => state.auth.token);
+  // const userId = useSelector(state => state.auth.user?.id);
+  const userId = useSelector((state) => state.auth.userId);
+  
 
   // Check authentication on component mount
   useEffect(() => {
@@ -49,28 +52,20 @@ const CustomerDashboard = () => {
 
     setLoading(true);
     setError("");
-    
+
     try {
       const url = searchTerm
         ? `http://localhost:8080/vehicle?search=${encodeURIComponent(searchTerm)}`
         : `http://localhost:8080/vehicle`;
 
       const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       setCars(response.data);
     } catch (err) {
       if (err.response && (err.response.status === 401 || err.response.status === 403)) {
         setError("Session expired. Please login again.");
-        // Clear all auth-related localStorage items
-        localStorage.removeItem("token");
-        localStorage.removeItem("userId");
-        localStorage.removeItem("role");
-        localStorage.removeItem("email");
-        localStorage.removeItem("name");
         navigate("/login");
       } else {
         setError("Failed to fetch cars. Please try again later.");
@@ -107,7 +102,6 @@ const CustomerDashboard = () => {
 
   return (
     <div className="container py-4">
-      {/* Search */}
       <h2 className="mb-3 fw-bold text-primary" style={{ letterSpacing: ".02em" }}>
         Search car here
       </h2>
@@ -143,7 +137,6 @@ const CustomerDashboard = () => {
           No cars found.
         </div>
       ) : (
-        /* UPDATED: Use Bootstrap grid system for proper 3-column layout */
         <div className="row g-4">
           {cars.map(car => (
             <div key={car.id} className="col-lg-4 col-md-6 col-sm-12">
@@ -153,11 +146,7 @@ const CustomerDashboard = () => {
                 onMouseOut={e => (e.currentTarget.style.transform = "none")}
               >
                 <img
-                  src={
-                    car.imageUrl || car.image
-                      ? (car.imageUrl || car.image)
-                      : "https://via.placeholder.com/110x72?text=No+Image"
-                  }
+                  src={car.imageUrl || car.image ? (car.imageUrl || car.image) : "https://via.placeholder.com/110x72?text=No+Image"}
                   alt={car.name}
                   style={{
                     width: 110,
@@ -166,41 +155,36 @@ const CustomerDashboard = () => {
                     borderRadius: "7px",
                     marginRight: "1.2rem",
                     boxShadow: "0 2px 7px rgba(17,34,102,0.11)",
-                    flexShrink: 0 // Added: Prevent image from shrinking
+                    flexShrink: 0
                   }}
                   loading="lazy"
                   onError={e => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/110x72?text=No+Image"; }}
                 />
-                <div style={{ flex: 1, minWidth: 0 }}> {/* Added: minWidth to prevent text overflow */}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontSize: "1.17rem",
-                      marginBottom: "0.5rem",
-                      color: "#1744ae",
-                      fontWeight: 600,
-                      flexWrap: "wrap" // Added: Allow wrapping for smaller screens
-                    }}
-                  >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "1.17rem",
+                    marginBottom: "0.5rem",
+                    color: "#1744ae",
+                    fontWeight: 600,
+                    flexWrap: "wrap"
+                  }}>
                     <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {car.name}
                     </span>
                     <span style={{ whiteSpace: "nowrap" }}>
-                      ₹{car.pricePerDay}
-                      <span style={{ fontSize: "0.97rem", color: "#1a239b" }}>/day</span>
+                      ₹{car.pricePerDay}<span style={{ fontSize: "0.97rem", color: "#1a239b" }}>/day</span>
                     </span>
                   </div>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      fontSize: "1.07rem",
-                      color: "#173071",
-                      gap: "7px",
-                      marginBottom: "0.5rem"
-                    }}
-                  >
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    fontSize: "1.07rem",
+                    color: "#173071",
+                    gap: "7px",
+                    marginBottom: "0.5rem"
+                  }}>
                     <span style={{ fontSize: "1.17rem" }}>⛽</span>
                     <span>{car.fuel}</span>
                     <span style={{ fontSize: "1.17rem", marginLeft: "10px" }}>👥</span>
@@ -246,8 +230,6 @@ const CustomerDashboard = () => {
           ))}
         </div>
       )}
-
-      
     </div>
   );
 };

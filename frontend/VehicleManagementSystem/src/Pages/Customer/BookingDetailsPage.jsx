@@ -5,6 +5,8 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AiFillStar } from "react-icons/ai";
 import { Spinner } from "react-bootstrap";
+import { useSelector, useDispatch } from "react-redux";
+import  {logout} from './../../redux/authSlice';
 
 const API_BASE_URL = "http://localhost:8080";
 const DEFAULT_CAR_IMG = "https://via.placeholder.com/260x120?text=Car+Photo";
@@ -16,6 +18,7 @@ const badgeStyles = {
   confirm: { color: '#2e7d32', backgroundColor: '#e8f5e9', padding: '0.18em 0.8em', borderRadius: 5, fontWeight: 600 },
   default: { color: '#2e7d32', backgroundColor: '#e8f5e9', padding: '0.18em 0.85em', borderRadius: 4, fontWeight: 600 }
 };
+
 const paymentBadgeStyles = {
   PAID: { color: '#0a7c36', backgroundColor: '#e3faeb', padding: '0.18em 0.85em', borderRadius: 4, fontWeight: 600 },
   FAILED: { color: '#b71c1c', backgroundColor: '#ffdde0', padding: '0.18em 0.85em', borderRadius: 4, fontWeight: 600 },
@@ -27,10 +30,12 @@ function formatDate(dateStr) {
   if (!dateStr) return "-";
   return new Date(dateStr).toLocaleDateString();
 }
+
 function formatDateTime(dateStr) {
   if (!dateStr) return "-";
   return new Date(dateStr).toLocaleString();
 }
+
 function getDayDiff(from, to) {
   if (!from || !to) return "-";
   const start = new Date(from);
@@ -40,8 +45,13 @@ function getDayDiff(from, to) {
 }
 
 export default function BookingDetailsPage() {
-  const { id } = useParams(); // BookingId
+  const { id } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const token = useSelector((state) => state.auth.token);
+  // const userId = useSelector((state) => state.auth.user?.id);
+const userId = useSelector((state) => state.auth.userId);
 
   const [booking, setBooking] = useState(null);
   const [vehicle, setVehicle] = useState(null);
@@ -49,23 +59,13 @@ export default function BookingDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Review state
   const [stars, setStars] = useState(0);
   const [description, setDescription] = useState("");
   const [postingReview, setPostingReview] = useState(false);
   const [reviewErrMsg, setReviewErrMsg] = useState("");
 
-  // Read token and userId from localStorage (stored during login)
-  const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
-
-  // Helper function to clear auth data and redirect
   const clearAuthAndRedirect = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("role");
-    localStorage.removeItem("email");
-    localStorage.removeItem("name");
+    dispatch(logout());
     navigate("/login");
   };
 
@@ -90,7 +90,6 @@ export default function BookingDetailsPage() {
       .then(res => {
         setBooking(res.data);
         if (res.data.vehicleId) {
-          // Updated route: /vehicle/{id} instead of /vehicles/{id}
           return axios.get(`${API_BASE_URL}/vehicle/${res.data.vehicleId}`, axiosAuthConfig)
             .then(vehRes => setVehicle(vehRes.data))
             .catch(() => setVehicle(null));
@@ -100,7 +99,6 @@ export default function BookingDetailsPage() {
         return null;
       })
       .then(() =>
-        // Updated route: /payment/booking/{bookingId} instead of /customer/payments/booking/{id}
         axios.get(`${API_BASE_URL}/payment/booking/${id}?userId=${userId}`, axiosAuthConfig)
           .then(res => setPayment(res.data))
           .catch(() => setPayment(null))
@@ -112,13 +110,57 @@ export default function BookingDetailsPage() {
           clearAuthAndRedirect();
         } else {
           setLoading(false);
-          setError(
-            err.response?.data?.message ||
-            "Error loading booking, vehicle, or payment details."
-          );
+          setError(err.response?.data?.message || "Error loading booking, vehicle, or payment details.");
         }
       });
-  }, [id, userId, token]);
+  }, [id, userId, token, dispatch, navigate]);
+
+  const getVehicleId = () =>
+    (vehicle && (vehicle.vehicleId || vehicle.id)) ||
+    booking.vehicleId ||
+    booking.vehicle_id ||
+    null;
+
+  const handleReviewSubmit = (e) => {
+    e.preventDefault();
+    setReviewErrMsg("");
+
+    if (!token || !userId) {
+      setReviewErrMsg("Authentication required. Please login to submit a review.");
+      clearAuthAndRedirect();
+      return;
+    }
+    if (stars === 0) {
+      setReviewErrMsg("Please select a star rating!");
+      return;
+    }
+
+    const vehicleId = getVehicleId();
+    if (!vehicleId) {
+      setReviewErrMsg("No valid vehicleId found. Cannot create review.");
+      return;
+    }
+
+    setPostingReview(true);
+    const axiosAuthConfig = { headers: { Authorization: `Bearer ${token}` } };
+
+    axios.post(`${API_BASE_URL}/reviews`, { vehicleId, userId, rating: stars, message: description }, axiosAuthConfig)
+      .then(() => {
+        toast.success("Thank you for your review!");
+        setDescription("");
+        setStars(0);
+        setReviewErrMsg("");
+      })
+      .catch(err => {
+        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+          setReviewErrMsg("Session expired. Please login again.");
+          clearAuthAndRedirect();
+        } else {
+          setReviewErrMsg(err.response?.data?.message || "Failed to submit review!");
+        }
+      })
+      .finally(() => setPostingReview(false));
+  };
 
   if (loading) {
     return (
@@ -130,6 +172,7 @@ export default function BookingDetailsPage() {
       </div>
     );
   }
+
   if (error || !booking) {
     return (
       <div style={{ background: "#f5f7fa", minHeight: "100vh" }}>
@@ -149,7 +192,7 @@ export default function BookingDetailsPage() {
   }
 
   const statusKey = (booking.bookingStatus || booking.status || "").toLowerCase();
-  let statusStyle = badgeStyles[(statusKey === "confirmed" ? "confirm" : statusKey)] || badgeStyles.default;
+  const statusStyle = badgeStyles[(statusKey === "confirmed" ? "confirm" : statusKey)] || badgeStyles.default;
 
   const payStat = (payment?.paymentStatus || "").toUpperCase();
   const paymentStyle = paymentBadgeStyles[payStat] || paymentBadgeStyles["--"];
@@ -158,73 +201,9 @@ export default function BookingDetailsPage() {
   const totalDays = getDayDiff(booking.startDate || booking.fromDate, booking.endDate || booking.toDate);
   const totalPrice = totalDays * (booking.pricePerDay || 0);
 
-  // Safely get vehicleId for review -- prefer vehicle.vehicleId, else booking.vehicleId
-  const getVehicleId = () =>
-    (vehicle && (vehicle.vehicleId || vehicle.id)) ||
-    booking.vehicleId ||
-    booking.vehicle_id || // compat for snake_case
-    null;
-
-  // Review submit: toast only for success!
-  const handleReviewSubmit = (e) => {
-    e.preventDefault();
-    setReviewErrMsg("");
-
-    if (!token || !userId) {
-      setReviewErrMsg("Authentication required. Please login to submit a review.");
-      clearAuthAndRedirect();
-      return;
-    }
-    if (stars === 0) {
-      setReviewErrMsg("Please select a star rating!");
-      return;
-    }
-    const vehicleId = getVehicleId();
-    if (!vehicleId) {
-      setReviewErrMsg("No valid vehicleId found. Cannot create review.");
-      return;
-    }
-    setPostingReview(true);
-
-    const axiosAuthConfig = { headers: { Authorization: `Bearer ${token}` } };
-
-    axios
-      .post(
-        // Updated route: /reviews instead of /customer/review
-        `${API_BASE_URL}/reviews`,
-        {
-          vehicleId,
-          userId,
-          rating: stars,
-          message: description
-        },
-        axiosAuthConfig
-      )
-      .then(() => {
-        toast.success("Thank you for your review!");
-        setDescription("");
-        setStars(0);
-        setReviewErrMsg("");
-      })
-      .catch(err => {
-        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-          setReviewErrMsg("Session expired. Please login again.");
-          clearAuthAndRedirect();
-        } else {
-          setReviewErrMsg(
-            err.response?.data?.message || "Failed to submit review!"
-          );
-        }
-      })
-      .finally(() => setPostingReview(false));
-  };
-
   const vehicleName = vehicle ? vehicle.name : (booking.carName || "-");
   const vehicleVariant = vehicle ? vehicle.variant : (booking.variant || "-");
-  const vehicleImgUrl =
-    (vehicle && (vehicle.imageUrl || vehicle.image)) ||
-    booking.carImage ||
-    DEFAULT_CAR_IMG;
+  const vehicleImgUrl = (vehicle && (vehicle.imageUrl || vehicle.image)) || booking.carImage || DEFAULT_CAR_IMG;
 
   return (
     <div style={{ background: '#f5f7fa', minHeight: '100vh' }}>
@@ -240,54 +219,22 @@ export default function BookingDetailsPage() {
                     src={vehicleImgUrl}
                     alt={vehicleName}
                     className="img-fluid rounded-3 shadow-sm"
-                    style={{
-                      width: 180,
-                      height: 108,
-                      objectFit: "cover",
-                      borderRadius: 14,
-                      boxShadow: "0 2px 10px rgba(24,44,123,0.11)",
-                      marginBottom: 10
-                    }}
-                    onError={e => { 
-                      e.target.onerror = null; 
-                      e.target.src = DEFAULT_CAR_IMG; 
-                    }}
+                    style={{ width: 180, height: 108, objectFit: "cover", borderRadius: 14, boxShadow: "0 2px 10px rgba(24,44,123,0.11)", marginBottom: 10 }}
+                    onError={e => { e.target.onerror = null; e.target.src = DEFAULT_CAR_IMG; }}
                   />
                 </div>
                 <div className="col-sm-7 col-12 px-3">
-                  <h4 className="mb-3 fw-bold" style={{ color: "#102649", letterSpacing: "0.5px" }}>
-                    Booking Details
-                  </h4>
-                  <div className="mb-2">
-                    <b>Booking ID:</b> <span>{booking.bookingId || booking.id || "-"}</span>
-                  </div>
-                  <div className="mb-2">
-                    <b>Car Name:</b> <span>{vehicleName}</span>
-                  </div>
-                  <div className="mb-2">
-                    <b>Variant:</b> <span>{vehicleVariant}</span>
-                  </div>
-                  <div className="mb-2">
-                    <b>Total Days:</b> <span>{totalDays}</span>
-                  </div>
-                  <div className="mb-2">
-                    <b>Price/Day:</b> <span>₹{booking.pricePerDay || (vehicle && vehicle.pricePerDay) || "-"}</span>
-                  </div>
-                  <div className="mb-2">
-                    <b>Total Price:</b> <span className="fw-semibold">₹{totalPrice}</span>
-                  </div>
-                  <div className="mb-2">
-                    <b>Booking Date & Time:</b> <span>{formatDateTime(booking.bookingDate)}</span>
-                  </div>
-                  <div className="mb-2">
-                    <b>From:</b> <span>{formatDate(booking.startDate || booking.fromDate)}</span>
-                  </div>
-                  <div className="mb-2">
-                    <b>To:</b> <span>{formatDate(booking.endDate || booking.toDate)}</span>
-                  </div>
-                  <div className="mb-2">
-                    <b>Status:</b> <span style={statusStyle}>{booking.bookingStatus || booking.status || "-"}</span>
-                  </div>
+                  <h4 className="mb-3 fw-bold" style={{ color: "#102649", letterSpacing: "0.5px" }}>Booking Details</h4>
+                  <div className="mb-2"><b>Booking ID:</b> <span>{booking.bookingId || booking.id || "-"}</span></div>
+                  <div className="mb-2"><b>Car Name:</b> <span>{vehicleName}</span></div>
+                  <div className="mb-2"><b>Variant:</b> <span>{vehicleVariant}</span></div>
+                  <div className="mb-2"><b>Total Days:</b> <span>{totalDays}</span></div>
+                  <div className="mb-2"><b>Price/Day:</b> <span>₹{booking.pricePerDay || (vehicle && vehicle.pricePerDay) || "-"}</span></div>
+                  <div className="mb-2"><b>Total Price:</b> <span className="fw-semibold">₹{totalPrice}</span></div>
+                  <div className="mb-2"><b>Booking Date & Time:</b> <span>{formatDateTime(booking.bookingDate)}</span></div>
+                  <div className="mb-2"><b>From:</b> <span>{formatDate(booking.startDate || booking.fromDate)}</span></div>
+                  <div className="mb-2"><b>To:</b> <span>{formatDate(booking.endDate || booking.toDate)}</span></div>
+                  <div className="mb-2"><b>Status:</b> <span style={statusStyle}>{booking.bookingStatus || booking.status || "-"}</span></div>
                 </div>
               </div>
             </div>
@@ -301,22 +248,13 @@ export default function BookingDetailsPage() {
               </h5>
               {payment ? (
                 <div className="row mb-2">
-                  <div className="col-6"><b>Payment ID:</b></div>
-                  <div className="col-6">{payment.paymentId || "-"}</div>
-                  <div className="col-6"><b>Booking ID:</b></div>
-                  <div className="col-6">{payment.bookingId || booking.bookingId || booking.id || "-"}</div>
-                  <div className="col-6"><b>Payment Method:</b></div>
-                  <div className="col-6">{payment.paymentMethod || "-"}</div>
-                  <div className="col-6"><b>Payment Status:</b></div>
-                  <div className="col-6">
-                    <span style={paymentStyle}>{payment.paymentStatus || paymentLabel || "-"}</span>
-                  </div>
-                  <div className="col-6"><b>Paid On:</b></div>
-                  <div className="col-6">{payment.paidOn ? formatDateTime(payment.paidOn) : "-"}</div>
-                  <div className="col-6"><b>Amount Paid:</b></div>
-                  <div className="col-6">₹{payment.amount || totalPrice}</div>
-                  <div className="col-6"><b>Transaction ID:</b></div>
-                  <div className="col-6">{payment.transactionId || "-"}</div>
+                  <div className="col-6"><b>Payment ID:</b></div><div className="col-6">{payment.paymentId || "-"}</div>
+                  <div className="col-6"><b>Booking ID:</b></div><div className="col-6">{payment.bookingId || booking.bookingId || booking.id || "-"}</div>
+                  <div className="col-6"><b>Payment Method:</b></div><div className="col-6">{payment.paymentMethod || "-"}</div>
+                  <div className="col-6"><b>Payment Status:</b></div><div className="col-6"><span style={paymentStyle}>{payment.paymentStatus || paymentLabel || "-"}</span></div>
+                  <div className="col-6"><b>Paid On:</b></div><div className="col-6">{payment.paidOn ? formatDateTime(payment.paidOn) : "-"}</div>
+                  <div className="col-6"><b>Amount Paid:</b></div><div className="col-6">₹{payment.amount || totalPrice}</div>
+                  <div className="col-6"><b>Transaction ID:</b></div><div className="col-6">{payment.transactionId || "-"}</div>
                 </div>
               ) : (
                 <div className="text-muted text-center py-3">
@@ -328,78 +266,30 @@ export default function BookingDetailsPage() {
           </div>
         </div>
 
-        {/* Review section */}
+        {/* Review Section */}
         <div className="row mb-4">
           <div className="col-lg-9 mx-auto">
             <div className="bg-white rounded-4 shadow-sm p-4">
-              <h4 className="mb-3 fw-bold text-primary">
-                <i className="bi bi-star me-2"></i>
-                Add a Review
-              </h4>
+              <h4 className="mb-3 fw-bold text-primary"><i className="bi bi-star me-2"></i>Add a Review</h4>
               <form onSubmit={handleReviewSubmit}>
                 <div className="mb-3">
                   <label className="form-label fw-semibold">Rating</label>
                   <div>
                     {[1, 2, 3, 4, 5].map(i => (
-                      <AiFillStar
-                        key={i}
-                        size={28}
-                        color={i <= stars ? "#FFD700" : "#e0e0e0"}
-                        onClick={() => setStars(i)}
-                        style={{
-                          cursor: "pointer",
-                          marginRight: 4,
-                          transition: "color 0.14s"
-                        }}
-                      />
+                      <AiFillStar key={i} size={28} color={i <= stars ? "#FFD700" : "#e0e0e0"} onClick={() => setStars(i)}
+                        style={{ cursor: "pointer", marginRight: 4, transition: "color 0.14s" }} />
                     ))}
-                    {stars > 0 && (
-                      <span className="ms-2 text-warning" style={{ fontWeight: 500 }}>
-                        {stars} Star{stars > 1 ? "s" : ""}
-                      </span>
-                    )}
+                    {stars > 0 && <span className="ms-2 text-warning" style={{ fontWeight: 500 }}>{stars} Star{stars > 1 ? "s" : ""}</span>}
                   </div>
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="reviewDesc" className="form-label fw-semibold">
-                    Description
-                  </label>
-                  <textarea
-                    className="form-control"
-                    id="reviewDesc"
-                    name="description"
-                    placeholder="Share your feedback"
-                    rows={3}
-                    maxLength={250}
-                    value={description}
-                    onChange={e => setDescription(e.target.value)}
-                    required
-                  />
+                  <label htmlFor="reviewDesc" className="form-label fw-semibold">Description</label>
+                  <textarea className="form-control" id="reviewDesc" placeholder="Share your feedback" rows={3} maxLength={250} value={description} onChange={e => setDescription(e.target.value)} required />
                 </div>
-                {reviewErrMsg && (
-                  <div className="alert alert-danger" style={{ fontSize: "1.04rem", textAlign: "center" }}>
-                    <i className="bi bi-exclamation-circle me-2"></i>
-                    {reviewErrMsg}
-                  </div>
-                )}
+                {reviewErrMsg && <div className="alert alert-danger" style={{ fontSize: "1.04rem", textAlign: "center" }}><i className="bi bi-exclamation-circle me-2"></i>{reviewErrMsg}</div>}
                 <div className="d-grid">
-                  <button
-                    className="btn btn-primary fw-semibold"
-                    type="submit"
-                    disabled={postingReview}
-                    style={{ fontSize: "1.1rem", padding: "0.6rem" }}
-                  >
-                    {postingReview ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2"></span>
-                        Submitting...
-                      </>
-                    ) : (
-                      <>
-                        <i className="bi bi-send me-2"></i>
-                        Submit Review
-                      </>
-                    )}
+                  <button className="btn btn-primary fw-semibold" type="submit" disabled={postingReview} style={{ fontSize: "1.1rem", padding: "0.6rem" }}>
+                    {postingReview ? <><span className="spinner-border spinner-border-sm me-2"></span>Submitting...</> : <><i className="bi bi-send me-2"></i>Submit Review</>}
                   </button>
                 </div>
               </form>

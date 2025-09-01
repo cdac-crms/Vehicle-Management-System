@@ -1,10 +1,16 @@
 import axios from "axios";
+import store from "../redux/store"; // <-- added
 
 const API_BASE_URL = "http://localhost:8080/variant";
 
-// Helper to get token from localStorage
+// Get token from Redux first (fallback to localStorage)
+const getAuthToken = () => {
+  const state = store.getState();
+  return state.auth?.token || localStorage.getItem("token");
+};
+
 const getAuthHeaders = () => {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   return {
     headers: {
       Authorization: `Bearer ${token}`,

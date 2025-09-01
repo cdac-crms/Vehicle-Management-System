@@ -89,8 +89,10 @@ function App() {
             path={path}
             element={
               <ProtectedRoute allowedRole="CUSTOMER">
+               <>
                 {element}
-        {path !== "/customer/customer-dashboard" && path !== "/customer/my-profile" && <Footer />}
+                {path !== "/customer/customer-dashboard" && path !== "/customer/my-profile" && <Footer />}
+               </>
               </ProtectedRoute>
             }
           />

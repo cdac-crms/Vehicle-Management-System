@@ -1,8 +1,13 @@
 import axios from "axios";
+import store from "../redux/store"; // <-- added
 
 const API_BASE_URL = "http://localhost:8080/customer";
 
-const getAuthToken = () => localStorage.getItem("token");
+// Get token from Redux first (fallback to localStorage)
+const getAuthToken = () => {
+  const state = store.getState();
+  return state.auth?.token || localStorage.getItem("token");
+};
 
 // Get all customers
 export const getAllCustomers = async () => {

@@ -1,18 +1,20 @@
 import axios from "axios";
+import store from "../redux/store";  // <-- import the Redux store
 
 const API_BASE_URL = "http://localhost:8080/company";
 
-// Utility to get the token from localStorage
-const getAuthToken = () => localStorage.getItem("token");
+// Utility to get token from Redux (fallback to localStorage for safety)
+const getAuthToken = () => {
+  const state = store.getState();
+  return state.auth?.token || localStorage.getItem("token");
+};
 
 // Add a new company
 export const addCompany = async (companyData) => {
   try {
     const token = getAuthToken();
     const response = await axios.post(`${API_BASE_URL}/addCompany`, companyData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
   } catch (error) {
@@ -26,9 +28,7 @@ export const getAllCompanies = async () => {
   try {
     const token = getAuthToken();
     const response = await axios.get(`${API_BASE_URL}/getAllCompanies`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
   } catch (error) {
@@ -42,9 +42,7 @@ export const getCompanyById = async (companyId) => {
   try {
     const token = getAuthToken();
     const response = await axios.get(`${API_BASE_URL}/getCompany/${companyId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
   } catch (error) {
